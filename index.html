@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CircuLab · Laboratorio virtual de MCU y MCUV</title>
+<meta name="description" content="Laboratorio virtual interactivo de Movimiento Circular Uniforme (MCU) y Uniformemente Variado (MCUV): simulador, tabla de datos, actividades e informe.">
+<meta name="author" content="Samadhi Gómez">
+<meta name="theme-color" content="#2D7FF9">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="CircuLab · Laboratorio virtual de MCU y MCUV">
+<meta property="og:description" content="Laboratorio virtual interactivo de Movimiento Circular Uniforme (MCU) y Uniformemente Variado (MCUV): simulador, tabla de datos, actividades e informe.">
+<meta property="og:locale" content="es_EC">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%A1%3C/text%3E%3C/svg%3E">
+<style>
+:root{--ink:#1F2A44;--blue:#2D7FF9;--coral:#FF5A5F;--mint:#14B87A;--violet:#7C4DFF;--sun:#FFC93C;--line:#C9D8EC;--muted:#5B6B88}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;color:var(--ink);background:#EAF5FF}
+#app{font-size:16px;min-height:100vh;background:linear-gradient(135deg,#E6F4FF 0%,#F6F9EC 55%,#FBF6E4 100%);padding-bottom:30px;position:relative}
+#app.big{font-size:19px}
+#app:fullscreen,#app:-webkit-full-screen{overflow:auto;width:100%;height:100%}
+#app.pseudoFS{position:fixed;inset:0;z-index:9999;overflow:auto}
+h1,h2,h3,h4{margin:0}
+h2{font-size:1.35em;margin-bottom:.4em}
+h3{font-size:1.1em;margin:.9em 0 .4em}
+p{line-height:1.5}
+.muted{color:var(--muted)}
+sub,sup{line-height:0}
+
+/* ---------- cabecera ---------- */
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px 6px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{font-size:2.4em;filter:drop-shadow(2px 2px 0 rgba(31,42,68,.25))}
+.brand h1{font-size:2em;font-weight:900;color:var(--blue);text-shadow:2px 2px 0 var(--sun);letter-spacing:.5px;line-height:1}
+.brand p{margin:2px 0 0;font-weight:700;color:var(--muted);font-size:.95em}
+.top-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.badge{display:inline-block;border:2.5px solid var(--ink);background:var(--sun);border-radius:999px;padding:5px 12px;font-weight:900;font-size:.9em}
+
+/* ---------- botones ---------- */
+.btn{font:inherit;font-weight:800;color:var(--ink);background:#fff;border:2.5px solid var(--ink);border-radius:12px;padding:8px 14px;box-shadow:3px 3px 0 var(--ink);cursor:pointer;transition:transform .08s,box-shadow .08s}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+.btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:3px 3px 0 var(--ink)}
+.btn.blue{background:var(--blue);color:#fff}.btn.mint{background:var(--mint);color:#fff}
+.btn.coral{background:var(--coral);color:#fff}.btn.violet{background:var(--violet);color:#fff}
+.btn.sun{background:var(--sun)}.btn.white{background:#fff}
+.btn.tiny{padding:4px 10px;font-size:.85em;border-radius:9px;box-shadow:2px 2px 0 var(--ink)}
+
+/* ---------- pestañas ---------- */
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:10px 18px 8px}
+.tab{font:inherit;font-weight:800;border:2.5px solid var(--ink);border-radius:999px;background:#fff;padding:8px 16px;cursor:pointer;white-space:nowrap;color:var(--ink)}
+.tab.active{background:var(--ink);color:#fff}
+.tab.teacher-only.active{background:var(--violet)}
+main{padding:6px 18px}
+.panel{display:none}.panel.active{display:block}
+.teacher-only{display:none}
+body.teacher .teacher-only{display:inline-block}
+body.teacher div.teacher-only,body.teacher section.teacher-only{display:block}
+body.teacher .tab.teacher-only{display:inline-block}
+body.hideAns .teacher-answer{display:none!important}
+
+/* ---------- tarjetas ---------- */
+.card{background:#fff;border:2.5px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--ink);padding:14px;margin-bottom:16px}
+.card.tint-blue{background:#F2F8FF}.card.tint-sun{background:#FFFBEA}
+.labgrid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(310px,1fr);gap:16px;align-items:start}
+@media(max-width:980px){.labgrid{grid-template-columns:1fr}}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.sel{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:.92em}
+select,input[type=text],input[type=number],textarea{font:inherit;color:var(--ink)}
+select{border:2.5px solid var(--ink);border-radius:10px;padding:5px 8px;font-weight:800;background:#fff}
+.cvwrap{position:relative;width:100%;aspect-ratio:1/.82;max-height:72vh;border:2.5px solid var(--ink);border-radius:14px;overflow:hidden;background:#F4FBFF}
+#cv{display:block;width:100%;height:100%}
+.cvmsg{position:absolute;left:10px;bottom:10px;right:10px;pointer-events:none}
+.cvmsg span{display:inline-block;background:var(--ink);color:#fff;border-radius:10px;padding:6px 12px;font-weight:700;font-size:.92em}
+.timeline{display:flex;align-items:center;gap:10px;margin-top:10px;font-weight:800}
+.timeline input{flex:1;accent-color:var(--coral)}
+.timeline b{min-width:80px;text-align:right}
+
+/* ---------- controles ---------- */
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.modebtn{font:inherit;border:2.5px solid var(--ink);border-radius:14px;padding:10px 8px;background:#fff;cursor:pointer;text-align:center;box-shadow:3px 3px 0 var(--ink);color:var(--ink)}
+.modebtn b{display:block;font-size:1.3em;font-weight:900}
+.modebtn small{display:block;font-weight:700;color:var(--muted)}
+.modebtn.on[data-m=MCU]{background:#D9F6EA}.modebtn.on[data-m=MCUV]{background:#FFE3E4}
+.modebtn.on{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.modebtn:disabled{opacity:.4;cursor:not-allowed}
+.crow{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:4px 8px;padding:8px 0;border-bottom:2px dashed var(--line)}
+.crow:last-child{border-bottom:0}
+.clabel{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.92em;line-height:1.15}
+.sym{display:inline-block;min-width:2.3em;text-align:center;background:var(--c);color:#fff;border:2px solid var(--ink);border-radius:9px;padding:2px 6px;font-size:1.05em}
+.crow input[type=number]{width:86px;border:2.5px solid var(--ink);border-radius:10px;padding:4px 6px;font-weight:800;text-align:right;background:#fff}
+.unit{font-weight:800;color:var(--muted);min-width:46px;font-size:.9em}
+.crow input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--c);margin:2px 0 0}
+.crow input:disabled{opacity:.55}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-weight:700;font-size:.93em}
+.opts label{display:flex;align-items:center;gap:7px;cursor:pointer}
+.opts input[type=checkbox]{width:18px;height:18px;accent-color:var(--blue)}
+.vdot{width:12px;height:12px;border-radius:50%;border:2px solid var(--ink);display:inline-block}
+.warn-box{background:#FFF1C9;border:2.5px solid var(--ink);border-radius:12px;padding:8px 12px;font-weight:700;margin-top:8px}
+
+/* ---------- lecturas ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{border:2.5px solid var(--ink);border-left:10px solid var(--c);border-radius:14px;padding:6px 10px;background:#fff}
+.tile small{display:block;font-weight:700;color:var(--muted);font-size:.78em}
+.tile b{font-size:1.5em;font-weight:900;font-variant-numeric:tabular-nums}
+.tile i{font-style:normal;font-weight:800;color:var(--muted);margin-left:5px;font-size:.85em}
+
+/* ---------- fórmulas en vivo ---------- */
+.frow{display:grid;grid-template-columns:minmax(130px,.9fr) minmax(170px,1.2fr) minmax(190px,1.6fr) minmax(110px,.8fr);gap:6px 12px;align-items:center;padding:7px 0;border-bottom:2px dashed var(--line)}
+.frow:last-child{border-bottom:0}
+.fname{font-weight:800;font-size:.9em;color:var(--muted)}
+.fexp{font-size:1.18em;font-weight:900;color:var(--violet)}
+.fsub{font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink)}
+.fres{font-weight:900;font-size:1.1em;background:#FFF3B8;border:2px solid var(--ink);border-radius:9px;padding:2px 8px;text-align:center;font-variant-numeric:tabular-nums}
+@media(max-width:760px){.frow{grid-template-columns:1fr 1fr}}
+
+/* ---------- gráficas ---------- */
+.charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media(max-width:760px){.charts{grid-template-columns:1fr}}
+.chartbox canvas{display:block;width:100%;height:240px;border:2.5px solid var(--ink);border-radius:12px;background:#fff;cursor:crosshair}
+
+/* ---------- tablas ---------- */
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.chk{display:inline-flex;align-items:center;gap:7px;font-weight:700;cursor:pointer}
+.chk input[type=checkbox]{width:18px;height:18px;accent-color:var(--blue)}
+.chk input[type=number]{border:2.5px solid var(--ink);border-radius:9px;padding:3px 6px;font-weight:800;width:72px}
+.tblwrap{overflow:auto;border:2.5px solid var(--ink);border-radius:12px;max-height:420px;background:#fff}
+table{border-collapse:collapse;width:100%;font-size:.93em;font-variant-numeric:tabular-nums}
+th{position:sticky;top:0;background:var(--ink);color:#fff;padding:7px 8px;white-space:nowrap;font-weight:800}
+td{padding:6px 8px;border-bottom:1.5px solid var(--line);text-align:right}
+tbody tr:nth-child(even){background:#F4F9FF}
+td.c{text-align:center}
+.pill{display:inline-block;border:2px solid var(--ink);border-radius:999px;padding:0 8px;font-weight:900;font-size:.82em}
+.pill.MCU{background:#D9F6EA}.pill.MCUV{background:#FFE3E4}
+.diag{margin-top:12px;border:2.5px solid var(--ink);border-radius:14px;padding:10px 14px;background:#EEF4FF;font-weight:700}
+table.simple td,table.simple th{text-align:left}
+table.simple th{position:static}
+
+/* ---------- teoría ---------- */
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.formula{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;background:#F3F0FF;border:2.5px solid var(--ink);border-radius:12px;padding:8px 12px;margin:8px 0;font-size:1.18em;font-weight:900;color:var(--violet)}
+.formula small{font-size:.62em;color:var(--muted);font-weight:800}
+.tag{display:inline-block;border:2.5px solid var(--ink);border-radius:999px;padding:2px 12px;font-weight:900;margin-right:6px;background:var(--c,#fff);color:#fff}
+.convbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.convbox label{font-weight:800;font-size:.9em;display:block}
+.convbox input{width:100%;border:2.5px solid var(--ink);border-radius:10px;padding:7px 9px;font-weight:800}
+
+/* ---------- actividades ---------- */
+.act{border-top:14px solid var(--c)}
+.act h2{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.act ol{margin:.4em 0 .8em;padding-left:1.3em;line-height:1.5}
+.ctx{background:#FFFBEA;border:2.5px dashed var(--ink);border-radius:12px;padding:8px 12px;font-weight:700;margin:6px 0}
+.qrow{display:grid;grid-template-columns:minmax(150px,1.2fr) minmax(90px,.7fr) auto auto;gap:6px 10px;align-items:center;padding:7px 0;border-bottom:2px dashed var(--line)}
+.qrow:last-child{border-bottom:0}
+.qrow label{font-weight:800}
+.qrow input[type=text]{border:2.5px solid var(--ink);border-radius:10px;padding:6px 9px;font-weight:800;width:100%}
+.qrow .res{grid-column:1/-1;font-weight:700;font-size:.93em}
+.res.good{color:#0A8A5B}.res.bad{color:#C7343A}.res.warn{color:#9A6B00}
+.keyans{background:#EDE7FF;border:2px solid var(--violet);border-radius:9px;padding:2px 9px;font-weight:800;font-size:.9em;color:#4B2BBF}
+.score{margin-left:auto;font-size:.8em}
+
+/* ---------- preguntas ---------- */
+.qcard{border-left:14px solid var(--c)}
+.qcard textarea,.reportbox textarea{width:100%;min-height:90px;border:2.5px solid var(--ink);border-radius:12px;padding:10px;font-size:1em;resize:vertical;background:#FFFEFA}
+.hint{display:none;background:#E8F8EF;border:2.5px solid var(--ink);border-radius:12px;padding:8px 12px;margin:8px 0;font-weight:700}
+.hint.show{display:block}
+.keybox{background:#EDE7FF;border:2.5px solid var(--violet);border-radius:12px;padding:8px 12px;margin-top:8px;font-weight:700}
+
+/* ---------- informe ---------- */
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.fields label{font-weight:800;font-size:.92em;display:block}
+.fields input{width:100%;border:2.5px solid var(--ink);border-radius:10px;padding:8px 10px;font-weight:700}
+.rep h3{border-bottom:3px solid var(--sun);padding-bottom:3px}
+
+/* ---------- modal ---------- */
+.modal{position:absolute;inset:0;background:rgba(31,42,68,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:16px;position:fixed}
+.modal.show{display:flex}
+.modal .box{background:#fff;border:3px solid var(--ink);border-radius:20px;box-shadow:6px 6px 0 var(--ink);padding:22px;max-width:380px;width:100%;text-align:center}
+.modal input{width:100%;border:2.5px solid var(--ink);border-radius:12px;padding:10px 12px;font-size:1.1em;font-weight:800;margin:12px 0 8px;text-align:center}
+.modal .err{color:#C7343A;font-weight:800;min-height:1.4em}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.shake{animation:shake .3s}
+
+/* ---------- impresión ---------- */
+@media print{
+  body{background:#fff}
+  #app{background:#fff;padding:0}
+  .top,.tabs,.noprint,.btn,.modal{display:none!important}
+  .panel{display:none!important}
+  .panel.active{display:block!important}
+  .card{box-shadow:none;break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<noscript><p style="font:700 18px sans-serif;padding:24px;text-align:center">Este laboratorio necesita JavaScript. Actívalo en tu navegador para usar CircuLab.</p></noscript>
+<div id="app">
+
+<header class="top">
+  <div class="brand">
+    <span class="logo">🎡</span>
+    <div><h1>CircuLab</h1><p>Laboratorio virtual · MCU y MCUV</p></div>
+  </div>
+  <div class="top-actions">
+    <span class="badge teacher-only" id="teacherBadge">👩‍🏫 Modo docente activo</span>
+    <button class="btn white" id="btnTexto" title="Aumentar el tamaño del texto">Aa Texto grande</button>
+    <button class="btn violet" id="btnDocente">🔐 Modo docente</button>
+    <button class="btn blue" id="btnFS">⛶ Pantalla completa</button>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab active" data-tab="lab">🔬 Laboratorio</button>
+  <button class="tab" data-tab="datos">📋 Datos y tabla</button>
+  <button class="tab" data-tab="formulas">📘 Fórmulas y variables</button>
+  <button class="tab" data-tab="act">🧪 Actividades</button>
+  <button class="tab" data-tab="preg">💭 Preguntas</button>
+  <button class="tab" data-tab="informe">📝 Informe</button>
+  <button class="tab teacher-only" data-tab="docente">🔐 Panel docente</button>
+</nav>
+
+<main>
+
+<!-- ================= LABORATORIO ================= -->
+<section class="panel active" id="p-lab">
+  <div class="labgrid">
+    <div class="card stage">
+      <div class="toolbar">
+        <button class="btn mint" id="bPlay">▶ Iniciar</button>
+        <button class="btn white" id="bReset">↺ Reiniciar</button>
+        <button class="btn white" id="bStep" title="Avanzar 0,1 s">⏭ +0,1 s</button>
+        <label class="sel">Velocidad
+          <select id="speed"><option value="0.25">0,25×</option><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select>
+        </label>
+        <button class="btn sun" id="bRec">📍 Registrar dato</button>
+        <button class="btn coral" id="bCut" title="Corta la cuerda en este instante">✂ Soltar cuerda</button>
+      </div>
+      <div class="cvwrap"><canvas id="cv"></canvas><div class="cvmsg" id="cvmsg"></div></div>
+      <div class="timeline"><span>⏱ t</span><input type="range" id="tl" min="0" max="20" step="0.01" value="0"><b id="tlv">0.00 s</b></div>
+      <p class="muted" style="margin:8px 0 0;font-size:.88em">Atajos: <b>Espacio</b> inicia/pausa · <b>R</b> reinicia · <b>G</b> registra un dato. Arrastra la barra de tiempo para recorrer el experimento.</p>
+    </div>
+
+    <div class="side">
+      <div class="card tint-blue">
+        <h2>🎛️ Modifica las variables</h2>
+        <div class="modes">
+          <button class="modebtn on" data-m="MCU"><b>MCU</b><small>Movimiento circular uniforme</small></button>
+          <button class="modebtn" data-m="MCUV"><b>MCUV</b><small>Uniformemente variado</small></button>
+        </div>
+        <div id="ctrls"></div>
+        <div class="row" style="margin-top:6px">
+          <label class="sel">Sentido del giro
+            <select id="dir"><option value="1">↺ Antihorario</option><option value="-1">↻ Horario</option></select>
+          </label>
+        </div>
+        <div class="warn-box" id="warnBox" style="display:none"></div>
+      </div>
+      <div class="card">
+        <h2>👁️ ¿Qué quieres ver?</h2>
+        <div class="opts">
+          <label><input type="checkbox" id="vV" checked><span class="vdot" style="background:#2D7FF9"></span>v (velocidad)</label>
+          <label><input type="checkbox" id="vAc" checked><span class="vdot" style="background:#FF5A5F"></span>a<sub>c</sub> (centrípeta)</label>
+          <label><input type="checkbox" id="vAt" checked><span class="vdot" style="background:#14B87A"></span>a<sub>t</sub> (tangencial)</label>
+          <label><input type="checkbox" id="vA"><span class="vdot" style="background:#7C4DFF"></span>a (total)</label>
+          <label><input type="checkbox" id="vStr" checked>👣 Huellas</label>
+          <label><input type="checkbox" id="vTrail" checked>🛤️ Recorrido</label>
+          <label><input type="checkbox" id="vAng" checked>📐 Ángulo θ</label>
+          <label class="sel">Cada <select id="strDt"><option value="0.25">0,25 s</option><option value="0.5" selected>0,5 s</option><option value="1">1 s</option><option value="2">2 s</option></select></label>
+        </div>
+        <div class="row" style="margin-bottom:0">
+          <label class="sel" style="flex:1 1 220px">Tamaño de flechas <input type="range" id="vScale" min="0.3" max="3" step="0.1" value="1" style="flex:1;accent-color:#2D7FF9"></label>
+        </div>
+        <p class="muted" style="margin:2px 0 8px;font-size:.82em">v tiene su propia escala; a<sub>c</sub>, a<sub>t</sub> y a comparten escala (las muy pequeñas se dibujan con un tamaño mínimo para poder verlas).</p>
+        <div class="row" style="margin-bottom:0">
+          <label class="sel">Móvil
+            <select id="skin"><option value="ball">🔴 Pelota</option><option value="car">🏎️ Auto</option><option value="sat">🛰️ Satélite</option><option value="bike">🏍️ Moto</option></select>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📟 Lecturas en vivo</h2>
+    <div class="tiles" id="tiles"></div>
+  </div>
+
+  <div class="card tint-sun">
+    <h2>🧮 Fórmulas a utilizar (con tus datos)</h2>
+    <p class="muted" style="margin:0 0 6px">Cada fila muestra la fórmula, tus valores sustituidos y el resultado en el instante actual.</p>
+    <div id="liveForm"></div>
+  </div>
+
+  <div class="card">
+    <h2>📈 Gráficas del movimiento</h2>
+    <p class="muted" style="margin:0 0 8px">Pasa el cursor (o el dedo) sobre una gráfica para leer los valores. Los puntos ● son los datos que registraste en la tabla.</p>
+    <div class="charts" id="charts">
+      <div class="chartbox"><canvas id="ch1"></canvas></div>
+      <div class="chartbox"><canvas id="ch2"></canvas></div>
+      <div class="chartbox"><canvas id="ch3"></canvas></div>
+      <div class="chartbox"><canvas id="ch4"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DATOS ================= -->
+<section class="panel" id="p-datos">
+  <div class="card">
+    <h2>📋 Tabla de datos experimentales</h2>
+    <p class="muted" style="margin-top:0">Registra mediciones con «📍 Registrar dato» o activa el registro automático y pulsa «Iniciar» en el laboratorio. La columna Δθ/Δt es la velocidad angular <i>media</i> entre dos registros consecutivos.</p>
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="autoRec"> Registro automático cada <input type="number" id="recDt" value="1" min="0.1" step="0.1"> s</label>
+      <button class="btn sun" id="bRec2">📍 Registrar dato ahora</button>
+      <button class="btn white" id="bDelLast">⌫ Borrar último</button>
+      <button class="btn white" id="bClear">🗑 Limpiar tabla</button>
+      <button class="btn blue" id="bCsv">⬇ Exportar CSV</button>
+    </div>
+    <div class="tblwrap">
+      <table id="tbl">
+        <thead><tr><th>#</th><th>Mov.</th><th>t (s)</th><th>θ (rad)</th><th>θ (°)</th><th>Vueltas</th><th>ω (rad/s)</th><th>v (m/s)</th><th>a<sub>c</sub> (m/s²)</th><th>a<sub>t</sub> (m/s²)</th><th>a (m/s²)</th><th>Δθ/Δt (rad/s)</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="diag" id="diag"></div>
+  </div>
+</section>
+
+<!-- ================= FÓRMULAS ================= -->
+<section class="panel" id="p-formulas">
+  <div class="two">
+    <div class="card" style="border-top:14px solid var(--mint)">
+      <h2><span class="tag" style="--c:var(--mint)">MCU</span> Movimiento Circular Uniforme</h2>
+      <p>El objeto recorre una circunferencia con <b>rapidez angular constante</b> (ω no cambia). La rapidez lineal también es constante, pero la <b>dirección</b> de la velocidad cambia, por eso existe aceleración centrípeta.</p>
+      <div class="formula">θ = θ₀ + ω · t <small>posición angular</small></div>
+      <div class="formula">v = ω · R <small>rapidez lineal</small></div>
+      <div class="formula">a<sub>c</sub> = ω² · R = v² / R <small>centrípeta</small></div>
+      <div class="formula">T = 2π / ω <small>periodo</small></div>
+      <div class="formula">f = 1 / T = ω / 2π <small>frecuencia</small></div>
+      <div class="formula">α = 0 y a<sub>t</sub> = 0 <small>no hay aceleración tangencial</small></div>
+    </div>
+    <div class="card" style="border-top:14px solid var(--coral)">
+      <h2><span class="tag" style="--c:var(--coral)">MCUV</span> Movimiento Circular Uniformemente Variado</h2>
+      <p>La rapidez angular <b>cambia de manera uniforme</b> con una aceleración angular α constante. Hay dos aceleraciones: <b>a<sub>t</sub></b> (cambia el valor de v) y <b>a<sub>c</sub></b> (cambia su dirección).</p>
+      <div class="formula">ω = ω₀ + α · t <small>rapidez angular</small></div>
+      <div class="formula">θ = θ₀ + ω₀·t + ½·α·t² <small>posición angular</small></div>
+      <div class="formula">ω² = ω₀² + 2·α·(θ − θ₀) <small>sin el tiempo</small></div>
+      <div class="formula">v = ω · R <small>rapidez lineal</small></div>
+      <div class="formula">a<sub>t</sub> = α · R <small>tangencial</small></div>
+      <div class="formula">a<sub>c</sub> = ω² · R <small>centrípeta</small></div>
+      <div class="formula">a = √(a<sub>c</sub>² + a<sub>t</sub>²) <small>aceleración total</small></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔤 ¿Qué significa cada variable?</h2>
+    <div class="tblwrap">
+      <table class="simple">
+        <thead><tr><th>Símbolo</th><th>Nombre</th><th>Unidad (SI)</th><th>¿Qué representa?</th></tr></thead>
+        <tbody>
+          <tr><td><b>θ</b></td><td>Posición angular</td><td>rad</td><td>Ángulo que forma el objeto respecto del eje de referencia. 1 vuelta = 2π rad = 360°.</td></tr>
+          <tr><td><b>θ₀</b></td><td>Posición angular inicial</td><td>rad (°)</td><td>Ángulo desde el que empieza el movimiento (en t = 0).</td></tr>
+          <tr><td><b>ω</b> (ω₀)</td><td>Rapidez angular (inicial)</td><td>rad/s</td><td>Cuántos radianes gira el objeto cada segundo. Es la «velocidad» del giro.</td></tr>
+          <tr><td><b>α</b></td><td>Aceleración angular</td><td>rad/s²</td><td>Cuántos rad/s cambia ω cada segundo. Positiva: acelera; negativa: frena.</td></tr>
+          <tr><td><b>t</b></td><td>Tiempo</td><td>s</td><td>Tiempo transcurrido desde que inició el movimiento.</td></tr>
+          <tr><td><b>R</b></td><td>Radio</td><td>m</td><td>Distancia del centro de giro al objeto.</td></tr>
+          <tr><td><b>s</b></td><td>Longitud de arco</td><td>m</td><td>Distancia recorrida sobre la circunferencia: s = θ · R.</td></tr>
+          <tr><td><b>v</b></td><td>Rapidez lineal (tangencial)</td><td>m/s</td><td>Rapidez con la que el objeto avanza sobre la circunferencia. Su vector es tangente a la trayectoria.</td></tr>
+          <tr><td><b>T</b></td><td>Periodo</td><td>s</td><td>Tiempo que tarda en dar una vuelta completa.</td></tr>
+          <tr><td><b>f</b></td><td>Frecuencia</td><td>Hz (1/s)</td><td>Número de vueltas por segundo.</td></tr>
+          <tr><td><b>n</b></td><td>Número de vueltas</td><td>—</td><td>n = θ / 2π (cuántas vueltas completas ha dado).</td></tr>
+          <tr><td><b>a<sub>c</sub></b></td><td>Aceleración centrípeta</td><td>m/s²</td><td>Cambia la <i>dirección</i> de v. Siempre apunta hacia el centro. Existe en MCU y MCUV.</td></tr>
+          <tr><td><b>a<sub>t</sub></b></td><td>Aceleración tangencial</td><td>m/s²</td><td>Cambia el <i>valor</i> de v. Es tangente a la trayectoria. Solo existe en MCUV.</td></tr>
+          <tr><td><b>a</b></td><td>Aceleración total</td><td>m/s²</td><td>Suma vectorial de a<sub>c</sub> y a<sub>t</sub> (son perpendiculares).</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="two">
+    <div class="card tint-blue">
+      <h2>🔁 Analogía: lineal ↔ circular</h2>
+      <div class="tblwrap">
+        <table class="simple">
+          <thead><tr><th>Movimiento recto</th><th>Movimiento circular</th></tr></thead>
+          <tbody>
+            <tr><td>x (posición)</td><td>θ (posición angular)</td></tr>
+            <tr><td>v (velocidad)</td><td>ω (rapidez angular)</td></tr>
+            <tr><td>a (aceleración)</td><td>α (aceleración angular)</td></tr>
+            <tr><td>x = x₀ + v·t (MRU)</td><td>θ = θ₀ + ω·t (MCU)</td></tr>
+            <tr><td>v = v₀ + a·t (MRUV)</td><td>ω = ω₀ + α·t (MCUV)</td></tr>
+            <tr><td>x = x₀ + v₀t + ½at²</td><td>θ = θ₀ + ω₀t + ½αt²</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted" style="margin-bottom:0">Puente entre ambos mundos: <b>s = θ·R</b>, <b>v = ω·R</b>, <b>a<sub>t</sub> = α·R</b>.</p>
+    </div>
+    <div class="card tint-sun">
+      <h2>🔄 Conversor de unidades</h2>
+      <p class="muted" style="margin-top:0">Escribe en cualquier casilla y se actualizan las demás.</p>
+      <div class="convbox">
+        <div><label>Revoluciones por minuto (rpm)</label><input type="number" id="cvRpm" step="any" placeholder="p. ej. 60"></div>
+        <div><label>Rapidez angular ω (rad/s)</label><input type="number" id="cvW" step="any"></div>
+        <div><label>Frecuencia f (Hz)</label><input type="number" id="cvF" step="any"></div>
+        <div><label>Periodo T (s)</label><input type="number" id="cvT" step="any"></div>
+        <div><label>ω en grados/s (°/s)</label><input type="number" id="cvDeg" step="any"></div>
+      </div>
+      <p class="muted" style="margin-bottom:0">1 rpm = 2π/60 rad/s ≈ 0,1047 rad/s · 1 vuelta = 2π rad = 360°</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ACTIVIDADES ================= -->
+<section class="panel" id="p-act">
+  <div class="card tint-blue">
+    <h2>🧪 Actividades de laboratorio</h2>
+    <p style="margin:0">Sigue el método científico: <b>observa → configura → registra → calcula → concluye</b>. Pulsa «Cargar en el simulador» para preparar cada experimento, escribe tus resultados y comprueba si son correctos. Si te equivocas, verás una pista con la fórmula que debes usar.</p>
+  </div>
+  <div id="actList"></div>
+</section>
+
+<!-- ================= PREGUNTAS ================= -->
+<section class="panel" id="p-preg">
+  <div class="card tint-sun">
+    <h2>💭 Preguntas problematizadoras</h2>
+    <p style="margin:0">Antes de responder, <b>experimenta</b> en el simulador. Escribe una explicación con tus propias palabras y apóyate en los datos y las gráficas. Usa «💡 Pista» solo si te atoras.</p>
+  </div>
+  <div id="qList"></div>
+</section>
+
+<!-- ================= INFORME ================= -->
+<section class="panel" id="p-informe">
+  <div class="card rep">
+    <h2>📝 Informe de la práctica de laboratorio</h2>
+    <div class="fields noprint-fields">
+      <div><label>Nombre del estudiante / grupo</label><input type="text" id="stName" placeholder="Apellidos y nombres"></div>
+      <div><label>Curso / paralelo</label><input type="text" id="stCourse" placeholder="p. ej. 2.º BGU «A»"></div>
+      <div><label>Fecha</label><input type="text" id="stDate"></div>
+    </div>
+    <div class="row noprint">
+      <button class="btn white" id="bRepRefresh">🔄 Actualizar informe</button>
+      <button class="btn blue" id="bPrint">🖨 Imprimir / Guardar PDF</button>
+    </div>
+    <div id="reportBody"></div>
+    <div class="reportbox">
+      <h3>✍️ Conclusiones</h3>
+      <textarea id="conc" placeholder="Escribe aquí tus conclusiones: ¿qué diferencias encontraste entre MCU y MCUV? ¿Qué relación hay entre ω, v y R?"></textarea>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DOCENTE ================= -->
+<section class="panel" id="p-docente">
+  <div class="two">
+    <div class="card" style="border-top:14px solid var(--violet)">
+      <h2>🎓 Guía docente</h2>
+      <h3>Objetivos de aprendizaje</h3>
+      <ol>
+        <li>Diferenciar el MCU del MCUV a partir de la evolución de ω, v, a<sub>c</sub> y a<sub>t</sub>.</li>
+        <li>Calcular θ, ω, v, T, f, a<sub>c</sub>, a<sub>t</sub> y a con las fórmulas del movimiento circular.</li>
+        <li>Interpretar gráficas θ–t, ω–t, v–t y a–t, y tablas de datos experimentales.</li>
+        <li>Relacionar magnitudes lineales y angulares (s = θR, v = ωR, a<sub>t</sub> = αR).</li>
+      </ol>
+      <h3>Distribución sugerida (90 min)</h3>
+      <div class="tblwrap"><table class="simple">
+        <thead><tr><th>Min</th><th>Momento</th><th>Recurso</th></tr></thead>
+        <tbody>
+          <tr><td>10</td><td>Exploración libre y primera pregunta</td><td>Laboratorio + P1</td></tr>
+          <tr><td>15</td><td>Fórmulas y variables</td><td>Pestaña Fórmulas</td></tr>
+          <tr><td>30</td><td>MCU: actividades A1–A3</td><td>Actividades + Datos</td></tr>
+          <tr><td>25</td><td>MCUV: actividades A4–A5 (A6 reto)</td><td>Actividades</td></tr>
+          <tr><td>10</td><td>Preguntas y conclusiones</td><td>Preguntas + Informe</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Consejos</h3>
+      <p style="margin-top:0">Proyecta con «Pantalla completa» y «Texto grande». Usa «✂ Soltar cuerda» para abrir la discusión sobre la 1.ª ley de Newton. Las «Huellas» muestran de forma inmediata la diferencia entre MCU (marcas equidistantes) y MCUV (marcas que se separan).</p>
+    </div>
+
+    <div class="card" style="border-top:14px solid var(--violet)">
+      <h2>⚙️ Control para estudiantes</h2>
+      <div class="opts" style="grid-template-columns:1fr">
+        <label><input type="checkbox" id="tLock"> Bloquear los controles de variables (los estudiantes solo observan)</label>
+        <label><input type="checkbox" id="tShowAns" checked> Mostrar claves y respuestas esperadas en pantalla</label>
+      </div>
+      <div class="row">
+        <label class="sel">Tipo de movimiento permitido
+          <select id="tRestrict"><option value="ALL">MCU y MCUV</option><option value="MCU">Solo MCU</option><option value="MCUV">Solo MCUV</option></select>
+        </label>
+      </div>
+      <p class="muted" style="margin:0">Estos ajustes se aplican al salir del modo docente.</p>
+      <h3>🔑 Cambiar la clave docente</h3>
+      <div class="row">
+        <input type="text" id="newKey" placeholder="Nueva clave (mín. 4 caracteres)" style="border:2.5px solid var(--ink);border-radius:10px;padding:8px 10px;font-weight:800">
+        <button class="btn violet" id="bNewKey">Guardar clave</button>
+      </div>
+      <div id="keyMsg" style="font-weight:800"></div>
+      <p class="muted" style="margin:6px 0 0;font-size:.88em">La clave se guarda en este navegador. Es una barrera pedagógica, no un sistema de seguridad: evita que los estudiantes vean las respuestas durante la clase.</p>
+      <div class="row"><button class="btn coral" id="bExitTeacher">🚪 Salir del modo docente</button></div>
+    </div>
+  </div>
+
+  <div class="card tint-blue">
+    <h2>🎲 Generador de problemas aleatorios</h2>
+    <p class="muted" style="margin-top:0">Crea un escenario nuevo con su solución para proyectar, evaluar o repartir variantes.</p>
+    <div class="row"><button class="btn mint" id="bRand">🎲 Generar escenario</button><button class="btn blue" id="bRandLoad" disabled>Cargar en el simulador</button></div>
+    <div id="randOut"></div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Rúbrica de evaluación (10 puntos)</h2>
+    <div class="tblwrap"><table class="simple">
+      <thead><tr><th>Criterio</th><th>Excelente</th><th>Satisfactorio</th><th>En proceso</th><th>Pts</th></tr></thead>
+      <tbody>
+        <tr><td>Configuración y registro de datos</td><td>Configura bien cada escenario y registra tablas completas</td><td>Registra datos con errores menores</td><td>Datos incompletos o sin escenario claro</td><td>2</td></tr>
+        <tr><td>Uso de fórmulas y cálculos</td><td>Elige la fórmula correcta, sustituye y expresa unidades</td><td>Cálculos correctos con fallas en unidades</td><td>Errores de fórmula o de sustitución</td><td>3</td></tr>
+        <tr><td>Gráficas e interpretación</td><td>Relaciona forma de la gráfica con el tipo de movimiento</td><td>Describe la gráfica sin explicar el porqué</td><td>No interpreta las gráficas</td><td>2</td></tr>
+        <tr><td>Preguntas problematizadoras</td><td>Argumenta con datos y conceptos físicos</td><td>Respuesta correcta sin argumentos</td><td>Respuesta parcial o incorrecta</td><td>2</td></tr>
+        <tr><td>Orden y conclusión</td><td>Informe ordenado y conclusión coherente con los datos</td><td>Informe ordenado, conclusión general</td><td>Informe desordenado o sin conclusión</td><td>1</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+</main>
+
+<!-- Modal de clave docente -->
+<div class="modal" id="modal">
+  <div class="box" id="modalBox">
+    <div style="font-size:2.4em">🔐</div>
+    <h2>Modo docente</h2>
+    <p class="muted" style="margin:0">Ingresa la clave para ver respuestas, claves y herramientas del docente.</p>
+    <input type="password" id="pwd" placeholder="Clave docente" autocomplete="off">
+    <div class="err" id="pwdErr"></div>
+    <div class="row" style="justify-content:center">
+      <button class="btn violet" id="pwdOk">Entrar</button>
+      <button class="btn white" id="pwdCancel">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+'use strict';
+/* ===== NÚCLEO FÍSICO + ACTIVIDADES (verificable con Node) ===== */
+const TAU = 2 * Math.PI;
+
+function effAlpha(p) { return p.mode === 'MCUV' ? p.alpha : 0; }
+
+/* Instante en que ω llega a 0 (solo MCUV frenando). Infinity si nunca ocurre. */
+function tRestOf(p) {
+  const a = effAlpha(p);
+  if (a === 0) return Infinity;
+  if (p.w0 * a < 0) return -p.w0 / a;
+  if (p.w0 === 0 && a < 0) return 0;
+  return Infinity;
+}
+function tEndOf(p) { return Math.max(0, Math.min(p.tmax, tRestOf(p))); }
+
+/* Cinemática completa en el instante t */
+function kinP(p, t) {
+  const a = effAlpha(p);
+  const dth = p.w0 * t + 0.5 * a * t * t;
+  let w = p.w0 + a * t;
+  if (Math.abs(w) < 1e-12) w = 0;
+  const th0 = p.th0 * Math.PI / 180;
+  const v = w * p.R, at = a * p.R, ac = w * w * p.R;
+  return {
+    t, dth, theta: th0 + dth, turns: dth / TAU, w, v, at, ac,
+    a: Math.hypot(ac, at), s: dth * p.R,
+    T: w > 1e-9 ? TAU / w : Infinity, f: w > 1e-9 ? w / TAU : 0, alpha: a
+  };
+}
+
+function hashKey(s) {
+  let a = 5381, b = 52711;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    a = ((a << 5) + a + c) | 0;
+    b = ((b << 5) ^ b ^ (c * 2654435761)) | 0;
+  }
+  return (a >>> 0).toString(36) + (b >>> 0).toString(36);
+}
+
+const ex = (p, o) => Object.assign({}, p, o);
+
+/* ===== ACTIVIDADES ===== */
+const ACT = [
+  {
+    id: 'A1', color: 'mint', level: 'Básico', mode: 'MCU', title: 'Conociendo el MCU',
+    params: { mode: 'MCU', R: 2, w0: 2, alpha: 0, th0: 0, tmax: 10, dir: 1 },
+    context: 'Una pelota atada a una cuerda de 2 m gira en un plano horizontal con ω = 2 rad/s.',
+    goal: 'Reconocer que en el MCU la rapidez angular es constante y calcular T, f, v y a<sub>c</sub>.',
+    steps: [
+      'Pulsa «Iniciar» y observa la flecha azul (v). ¿Cambia de dirección? ¿Cambia de tamaño?',
+      'Activa «Huellas» y compara la separación entre las marcas. ¿Son iguales?',
+      'En la pestaña «Datos» activa el registro automático (Δt = 1 s) y deja correr hasta t = 6 s.',
+      'Observa las gráficas θ–t y ω–t. ¿Qué forma tiene cada una?',
+      'Calcula con las fórmulas y escribe tus resultados.'
+    ],
+    qs: [
+      { id: 'A1a', text: 'Periodo T', unit: 's', hint: 'T = 2π / ω', fn: p => kinP(p, 0).T },
+      { id: 'A1b', text: 'Frecuencia f', unit: 'Hz', hint: 'f = 1 / T', fn: p => kinP(p, 0).f },
+      { id: 'A1c', text: 'Rapidez lineal v', unit: 'm/s', hint: 'v = ω · R', fn: p => kinP(p, 0).v },
+      { id: 'A1d', text: 'Aceleración centrípeta a<sub>c</sub>', unit: 'm/s²', hint: 'a_c = ω² · R', fn: p => kinP(p, 0).ac },
+      { id: 'A1e', text: 'Posición angular θ en t = 5 s', unit: 'rad', hint: 'θ = θ₀ + ω · t', fn: p => kinP(p, 5).theta },
+      { id: 'A1f', text: 'Vueltas completas en t = 5 s', unit: 'vueltas', hint: 'n = θ / 2π', fn: p => kinP(p, 5).turns }
+    ]
+  },
+  {
+    id: 'A2', color: 'mint', level: 'Básico', mode: 'MCU', title: 'El radio manda: carrusel con dos niños',
+    params: { mode: 'MCU', R: 1, w0: 3, alpha: 0, th0: 0, tmax: 10, dir: 1 },
+    context: 'Un carrusel gira con ω = 3 rad/s. Ana está a R = 1 m del centro y Beto a R = 4 m.',
+    goal: 'Descubrir que todos los puntos comparten ω y T, pero v y a<sub>c</sub> aumentan con el radio.',
+    steps: [
+      'Con R = 1 m (Ana) lee v y a<sub>c</sub> en las lecturas en vivo.',
+      'Cambia R a 4 m (Beto) sin tocar ω. Anota qué cambió y qué no.',
+      'Compara las flechas v y a<sub>c</sub> en ambos casos.',
+      'Calcula los valores con las fórmulas.'
+    ],
+    qs: [
+      { id: 'A2a', text: 'Periodo T (igual para Ana y Beto)', unit: 's', hint: 'T = 2π / ω', fn: p => kinP(p, 0).T },
+      { id: 'A2b', text: 'v de Ana (R = 1 m)', unit: 'm/s', hint: 'v = ω · R', fn: p => kinP(ex(p, { R: 1 }), 0).v },
+      { id: 'A2c', text: 'v de Beto (R = 4 m)', unit: 'm/s', hint: 'v = ω · R', fn: p => kinP(ex(p, { R: 4 }), 0).v },
+      { id: 'A2d', text: 'a<sub>c</sub> de Ana', unit: 'm/s²', hint: 'a_c = ω² · R', fn: p => kinP(ex(p, { R: 1 }), 0).ac },
+      { id: 'A2e', text: 'a<sub>c</sub> de Beto', unit: 'm/s²', hint: 'a_c = ω² · R', fn: p => kinP(ex(p, { R: 4 }), 0).ac }
+    ]
+  },
+  {
+    id: 'A3', color: 'sun', level: 'Intermedio', mode: 'MCU', title: 'De rpm a rad/s: el disco giratorio',
+    params: { mode: 'MCU', R: 1.5, w0: 6.283, alpha: 0, th0: 0, tmax: 6, dir: 1 },
+    context: 'Un disco de 1,5 m de radio gira a 60 rpm (revoluciones por minuto).',
+    goal: 'Convertir unidades (rpm → rad/s) y usar las fórmulas del MCU.',
+    steps: [
+      'Convierte: 1 vuelta = 2π rad y 1 min = 60 s.',
+      'Escribe tu valor de ω en el simulador (6.283) y comprueba que el periodo sea ≈ 1 s.',
+      'Calcula T, f, v y a<sub>c</sub> con las fórmulas.'
+    ],
+    qs: [
+      { id: 'A3a', text: 'Rapidez angular ω', unit: 'rad/s', hint: 'ω = 60 · 2π / 60', fn: () => TAU },
+      { id: 'A3b', text: 'Periodo T', unit: 's', hint: 'T = 2π / ω', fn: p => kinP(ex(p, { w0: TAU }), 0).T },
+      { id: 'A3c', text: 'Frecuencia f', unit: 'Hz', hint: 'f = 1 / T', fn: p => kinP(ex(p, { w0: TAU }), 0).f },
+      { id: 'A3d', text: 'Rapidez lineal v', unit: 'm/s', hint: 'v = ω · R', fn: p => kinP(ex(p, { w0: TAU }), 0).v },
+      { id: 'A3e', text: 'Aceleración centrípeta a<sub>c</sub>', unit: 'm/s²', hint: 'a_c = ω² · R', fn: p => kinP(ex(p, { w0: TAU }), 0).ac }
+    ]
+  },
+  {
+    id: 'A4', color: 'sun', level: 'Intermedio', mode: 'MCUV', title: 'Arrancando: MCUV acelerado',
+    params: { mode: 'MCUV', R: 2, w0: 0, alpha: 1.5, th0: 0, tmax: 8, dir: 1 },
+    context: 'Un ventilador industrial con aspas de 2 m arranca desde el reposo con α = 1,5 rad/s².',
+    goal: 'Ver que ω crece de forma lineal, θ de forma cuadrática y que aparece la aceleración tangencial.',
+    steps: [
+      'Activa «Huellas»: ¿qué pasa con la separación entre marcas cada 0,5 s?',
+      'Observa la gráfica ω–t (recta) y θ–t (parábola).',
+      'Usa el control de tiempo para ir a t = 4 s y lee los valores.',
+      'Comprueba con las fórmulas del MCUV.'
+    ],
+    qs: [
+      { id: 'A4a', text: 'ω en t = 4 s', unit: 'rad/s', hint: 'ω = ω₀ + α · t', fn: p => kinP(p, 4).w },
+      { id: 'A4b', text: 'Ángulo recorrido en t = 4 s', unit: 'rad', hint: 'θ = ω₀·t + ½·α·t²', fn: p => kinP(p, 4).dth },
+      { id: 'A4c', text: 'Vueltas en t = 4 s', unit: 'vueltas', hint: 'n = θ / 2π', fn: p => kinP(p, 4).turns },
+      { id: 'A4d', text: 'v en t = 4 s', unit: 'm/s', hint: 'v = ω · R', fn: p => kinP(p, 4).v },
+      { id: 'A4e', text: 'a<sub>t</sub> (tangencial)', unit: 'm/s²', hint: 'a_t = α · R', fn: p => kinP(p, 4).at },
+      { id: 'A4f', text: 'a<sub>c</sub> en t = 4 s', unit: 'm/s²', hint: 'a_c = ω² · R', fn: p => kinP(p, 4).ac }
+    ]
+  },
+  {
+    id: 'A5', color: 'coral', level: 'Intermedio', mode: 'MCUV', title: 'Frenando hasta detenerse',
+    params: { mode: 'MCUV', R: 3, w0: 6, alpha: -1.5, th0: 0, tmax: 20, dir: 1 },
+    context: 'Una rueda de 3 m de radio gira a 6 rad/s y se aplica el freno con α = −1,5 rad/s².',
+    goal: 'Analizar un MCUV desacelerado: tiempo de frenado, ángulo total y cómo cambia a<sub>c</sub>.',
+    steps: [
+      'Inicia la simulación y espera a que la rueda se detenga. Anota el tiempo.',
+      'Observa cómo se encoge el vector a<sub>c</sub> mientras a<sub>t</sub> se mantiene.',
+      'Calcula con ω = 0 en la fórmula ω = ω₀ + α·t.'
+    ],
+    qs: [
+      { id: 'A5a', text: 'Tiempo que tarda en detenerse', unit: 's', hint: '0 = ω₀ + α · t', fn: p => tRestOf(p) },
+      { id: 'A5b', text: 'Ángulo total recorrido hasta detenerse', unit: 'rad', hint: 'θ = ω₀·t + ½·α·t²', fn: p => kinP(p, tRestOf(p)).dth },
+      { id: 'A5c', text: 'Vueltas dadas hasta detenerse', unit: 'vueltas', hint: 'n = θ / 2π', fn: p => kinP(p, tRestOf(p)).turns },
+      { id: 'A5d', text: 'v inicial', unit: 'm/s', hint: 'v = ω₀ · R', fn: p => kinP(p, 0).v },
+      { id: 'A5e', text: 'a<sub>c</sub> inicial', unit: 'm/s²', hint: 'a_c = ω₀² · R', fn: p => kinP(p, 0).ac },
+      { id: 'A5f', text: 'ω en t = 2 s', unit: 'rad/s', hint: 'ω = ω₀ + α · t', fn: p => kinP(p, 2).w }
+    ]
+  },
+  {
+    id: 'A6', color: 'coral', level: 'Avanzado', mode: 'MCUV', title: 'Reto del ingeniero',
+    params: { mode: 'MCUV', R: 2.5, w0: 2, alpha: 1, th0: 0, tmax: 8, dir: 1 },
+    context: 'Un motor con rotor de R = 2,5 m pasa de 2 rad/s a 12 rad/s en exactamente 5 s con aceleración angular constante.',
+    goal: 'Determinar α a partir de los datos y predecir las demás magnitudes.',
+    steps: [
+      'Prueba valores de α en el simulador hasta que, en t = 5 s, ω = 12 rad/s.',
+      'Confirma tu α despejando de ω = ω₀ + α·t.',
+      'Calcula las magnitudes pedidas y verifícalas en el simulador.'
+    ],
+    qs: [
+      { id: 'A6a', text: 'Aceleración angular α', unit: 'rad/s²', hint: 'α = (ω − ω₀) / t', fn: () => 2 },
+      { id: 'A6b', text: 'Ángulo recorrido en 5 s', unit: 'rad', hint: 'θ = ω₀·t + ½·α·t²', fn: p => kinP(ex(p, { alpha: 2 }), 5).dth },
+      { id: 'A6c', text: 'Vueltas dadas en 5 s', unit: 'vueltas', hint: 'n = θ / 2π', fn: p => kinP(ex(p, { alpha: 2 }), 5).turns },
+      { id: 'A6d', text: 'v final (t = 5 s)', unit: 'm/s', hint: 'v = ω · R', fn: p => kinP(ex(p, { alpha: 2 }), 5).v },
+      { id: 'A6e', text: 'a<sub>t</sub>', unit: 'm/s²', hint: 'a_t = α · R', fn: p => kinP(ex(p, { alpha: 2 }), 5).at },
+      { id: 'A6f', text: 'a<sub>c</sub> final (t = 5 s)', unit: 'm/s²', hint: 'a_c = ω² · R', fn: p => kinP(ex(p, { alpha: 2 }), 5).ac }
+    ]
+  }
+];
+
+if (typeof module !== 'undefined') module.exports = { TAU, kinP, tRestOf, tEndOf, hashKey, ACT, ex, effAlpha };
+
+/* ===================== INTERFAZ Y SIMULACIÓN ===================== */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const fmt = (x, d = 2) => Number.isFinite(x) ? x.toFixed(d) : '—';
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const COL = { blue: '#2D7FF9', coral: '#FF5A5F', mint: '#14B87A', violet: '#7C4DFF', sun: '#FFC93C', ink: '#1F2A44' };
+const DEFAULT_HASH = '1kzwbp07bmgtm';
+const KEY_STORE = 'circulab_clave_docente';
+
+const S = {
+  p: { mode: 'MCU', R: 2, w0: 2, alpha: 1, th0: 0, tmax: 10, dir: 1 },
+  t: 0, running: false, last: 0, speed: 1, dirty: true,
+  rel: null, rows: [], nextRec: 0, auto: false, recDt: 1, hoverT: null,
+  view: { v: true, ac: true, at: true, a: false, strobo: true, trail: true, angle: true, strDt: 0.5, skin: 'ball', vs: 1 },
+  teacher: false, lock: false, restrict: 'ALL', tab: 'lab',
+  ansAct: {}, ansQ: {}, rand: null
+};
+const tEnd = () => tEndOf(S.p);
+
+/* ---------- definición de controles ---------- */
+const CTRL = [
+  { k: 'R', sym: 'R', name: () => 'Radio de la trayectoria', unit: 'm', min: 0.2, max: 10, step: 0.1, col: 'blue' },
+  { k: 'w0', sym: () => S.p.mode === 'MCU' ? 'ω' : 'ω₀', name: () => S.p.mode === 'MCU' ? 'Rapidez angular (constante)' : 'Rapidez angular inicial', unit: 'rad/s', min: 0, max: 12, step: 0.1, col: 'violet' },
+  { k: 'alpha', sym: 'α', name: () => 'Aceleración angular', unit: 'rad/s²', min: -3, max: 3, step: 0.1, col: 'mint', only: 'MCUV' },
+  { k: 'th0', sym: 'θ₀', name: () => 'Posición angular inicial', unit: '°', min: 0, max: 360, step: 1, col: 'sun' },
+  { k: 'tmax', sym: 't máx', name: () => 'Duración del experimento', unit: 's', min: 2, max: 60, step: 1, col: 'coral' }
+];
+const r3 = v => +Number(v).toFixed(3);
+
+function buildControls() {
+  const box = $('#ctrls'); box.innerHTML = '';
+  CTRL.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'crow'; d.dataset.k = c.k; d.style.setProperty('--c', COL[c.col]);
+    d.innerHTML = `<div class="clabel"><b class="sym"></b><span class="nm"></span></div>
+      <input type="number" class="num" min="${c.min}" max="${c.max}" step="${c.step}">
+      <span class="unit">${c.unit}</span>
+      <input type="range" class="rng" min="${c.min}" max="${c.max}" step="${c.step}">`;
+    box.appendChild(d);
+    const num = d.querySelector('.num'), rng = d.querySelector('.rng');
+    rng.addEventListener('input', () => { S.p[c.k] = parseFloat(rng.value); num.value = r3(S.p[c.k]); paramsChanged(); });
+    num.addEventListener('input', () => {
+      const v = parseFloat(num.value);
+      if (Number.isFinite(v) && v >= c.min && v <= c.max) { S.p[c.k] = v; rng.value = v; paramsChanged(); }
+    });
+    num.addEventListener('change', () => {
+      let v = parseFloat(num.value); if (!Number.isFinite(v)) v = S.p[c.k];
+      v = clamp(v, c.min, c.max); S.p[c.k] = v; num.value = r3(v); rng.value = v; paramsChanged();
+    });
+  });
+  syncControls();
+}
+function syncControls() {
+  CTRL.forEach(c => {
+    const d = $(`.crow[data-k="${c.k}"]`); if (!d) return;
+    d.style.display = (c.only && c.only !== S.p.mode) ? 'none' : '';
+    d.querySelector('.sym').textContent = typeof c.sym === 'function' ? c.sym() : c.sym;
+    d.querySelector('.nm').textContent = c.name();
+    const num = d.querySelector('.num'), rng = d.querySelector('.rng');
+    if (document.activeElement !== num) num.value = r3(S.p[c.k]);
+    rng.value = S.p[c.k];
+  });
+  $$('.modebtn').forEach(b => b.classList.toggle('on', b.dataset.m === S.p.mode));
+  $('#dir').value = String(S.p.dir);
+  applyLock();
+}
+function applyLock() {
+  const locked = S.lock && !S.teacher;
+  $$('#ctrls input, #dir').forEach(i => i.disabled = locked);
+  $$('.modebtn').forEach(b => {
+    b.disabled = locked || (S.restrict !== 'ALL' && b.dataset.m !== S.restrict);
+  });
+}
+
+function setParams(newP) {
+  Object.assign(S.p, newP);
+  S.running = false; S.rel = null; S.t = 0; S.nextRec = 0;
+  syncControls(); afterParams(); updatePlayBtn();
+}
+function paramsChanged() {
+  S.rel = null; S.t = 0; S.nextRec = 0;
+  afterParams();
+}
+function afterParams() {
+  const te = tEnd();
+  if (S.t > te) S.t = te;
+  const tl = $('#tl'); tl.max = Math.max(te, 0.01);
+  const w = $('#warnBox'), p = S.p;
+  if (p.mode === 'MCUV' && p.w0 === 0 && p.alpha < 0) {
+    w.style.display = 'block';
+    w.textContent = '⚠️ Con ω₀ = 0 no se puede frenar (ω quedaría negativa). Usa α ≥ 0 o aumenta ω₀.';
+  } else if (p.mode === 'MCUV' && p.w0 > 0 && p.alpha < 0 && tRestOf(p) < p.tmax) {
+    w.style.display = 'block';
+    w.textContent = `ℹ️ El objeto se detendrá en t = ${fmt(tRestOf(p))} s (cuando ω llega a 0) y el experimento termina allí.`;
+  } else { w.style.display = 'none'; }
+  const lab = $('.crow[data-k="w0"] .nm'); if (lab) lab.textContent = CTRL[1].name();
+  const sy = $('.crow[data-k="w0"] .sym'); if (sy) sy.textContent = CTRL[1].sym();
+  S.dirty = true;
+}
+
+/* ---------- simulación ---------- */
+function updatePlayBtn() {
+  const b = $('#bPlay');
+  if (S.running) { b.textContent = '⏸ Pausar'; b.className = 'btn coral'; }
+  else if (S.t > 0 && S.t < tEnd() - 1e-9) { b.textContent = '▶ Reanudar'; b.className = 'btn mint'; }
+  else { b.textContent = '▶ Iniciar'; b.className = 'btn mint'; }
+}
+function togglePlay() {
+  if (S.running) { S.running = false; updatePlayBtn(); return; }
+  const te = tEnd();
+  if (te <= 0) return;
+  if (S.rel) { S.rel = null; S.t = 0; S.nextRec = 0; }
+  if (S.t >= te - 1e-9) { S.t = 0; S.nextRec = 0; }
+  S.running = true; S.last = performance.now(); updatePlayBtn();
+}
+function resetSim() {
+  S.running = false; S.t = 0; S.rel = null; S.nextRec = 0; S.dirty = true; updatePlayBtn();
+}
+function advance(dt) {
+  if (S.rel) { moveRel(dt); return; }
+  const te = tEnd(); const tn = S.t + dt;
+  if (S.auto) {
+    while (S.nextRec <= tn + 1e-9 && S.nextRec <= te + 1e-9) { addRow(S.nextRec); S.nextRec += S.recDt; }
+  }
+  if (tn >= te) { S.t = te; S.running = false; updatePlayBtn(); } else S.t = tn;
+}
+function addRow(t) {
+  if (S.rows.length >= 150) S.rows.shift();
+  const k = kinP(S.p, t);
+  S.rows.push({ ...k, mode: S.p.mode, key: JSON.stringify(S.p) });
+  renderTable(); S.dirty = true;
+}
+
+/* ---------- soltar la cuerda ---------- */
+function geom(W, H) {
+  const maxR = Math.max(60, Math.min(W, H) / 2 - 64);
+  const Rpx = maxR * (0.3 + 0.7 * Math.sqrt(clamp((S.p.R - 0.2) / 9.8, 0, 1)));
+  return { cx: W / 2, cy: H / 2, Rpx, pxPerM: Rpx / S.p.R };
+}
+function posAt(g, k) {
+  const phi = S.p.dir * k.theta;
+  return { phi, x: g.cx + g.Rpx * Math.cos(phi), y: g.cy - g.Rpx * Math.sin(phi) };
+}
+function cutRope() {
+  const cv = $('#cv'), r = cv.getBoundingClientRect();
+  const g = geom(r.width, r.height), k = kinP(S.p, S.t), po = posAt(g, k);
+  const ux = -S.p.dir * Math.sin(po.phi), uy = -S.p.dir * Math.cos(po.phi);
+  S.rel = { x: po.x, y: po.y, vx: ux * k.v * g.pxPerM, vy: uy * k.v * g.pxPerM, x0: po.x, y0: po.y, v: k.v, el: 0 };
+  S.running = true; S.last = performance.now(); updatePlayBtn();
+}
+function moveRel(dt) {
+  const r = S.rel, cv = $('#cv'), b = cv.getBoundingClientRect();
+  r.x += r.vx * dt; r.y += r.vy * dt; r.el += dt;
+  if (r.x < -60 || r.x > b.width + 60 || r.y < -60 || r.y > b.height + 60 || r.el > 12) { S.running = false; updatePlayBtn(); }
+}
+
+/* ---------- mensajes en el lienzo ---------- */
+function statusMsg() {
+  const p = S.p, te = tEnd();
+  if (S.rel) return S.rel.v < 1e-6 ? 'Con v = 0 no sale despedido: no hay movimiento.' : '✂ Sin cuerda no hay fuerza centrípeta: sigue en línea recta, tangente a la circunferencia (1.ª ley de Newton).';
+  if (p.mode === 'MCUV' && p.w0 === 0 && p.alpha < 0) return 'Con ω₀ = 0 no se puede frenar. Usa α ≥ 0.';
+  if (S.t >= te - 1e-9 && te > 0) return te < p.tmax - 1e-9 ? '🛑 ¡Se detuvo! ω = 0 y el experimento terminó.' : '🏁 Fin del experimento (t máx).';
+  return '';
+}
+
+/* ===================== DIBUJO DEL ESCENARIO ===================== */
+function roundRect(g, x, y, w, h, r) {
+  g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
+}
+function arrow(g, x0, y0, x1, y1, col, wd = 4) {
+  const L = Math.hypot(x1 - x0, y1 - y0); if (L < 3) return;
+  const ang = Math.atan2(y1 - y0, x1 - x0), hl = Math.min(14, L * 0.6);
+  g.save(); g.strokeStyle = col; g.fillStyle = col; g.lineWidth = wd; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1 - Math.cos(ang) * hl * 0.6, y1 - Math.sin(ang) * hl * 0.6); g.stroke();
+  g.beginPath(); g.moveTo(x1, y1);
+  g.lineTo(x1 - hl * Math.cos(ang - 0.42), y1 - hl * Math.sin(ang - 0.42));
+  g.lineTo(x1 - hl * Math.cos(ang + 0.42), y1 - hl * Math.sin(ang + 0.42)); g.closePath(); g.fill();
+  g.restore();
+}
+function tagText(g, main, sub, x, y, col) {
+  g.save(); g.font = 'bold 15px "Trebuchet MS",sans-serif'; g.textBaseline = 'middle'; g.textAlign = 'left';
+  const wm = g.measureText(main).width; g.font = 'bold 11px "Trebuchet MS",sans-serif';
+  const ws = sub ? g.measureText(sub).width : 0;
+  g.fillStyle = 'rgba(255,255,255,.88)'; roundRect(g, x - 4, y - 11, wm + ws + 8, 22, 7); g.fill();
+  g.fillStyle = col; g.font = 'bold 15px "Trebuchet MS",sans-serif'; g.fillText(main, x, y);
+  if (sub) { g.font = 'bold 11px "Trebuchet MS",sans-serif'; g.fillText(sub, x + wm, y + 4); }
+  g.restore();
+}
+function drawBody(g, x, y, skin) {
+  if (skin === 'ball') {
+    const gr = g.createRadialGradient(x - 4, y - 5, 2, x, y, 15);
+    gr.addColorStop(0, '#FFB3B5'); gr.addColorStop(1, '#FF5A5F');
+    g.fillStyle = gr; g.strokeStyle = COL.ink; g.lineWidth = 3;
+    g.beginPath(); g.arc(x, y, 14, 0, 7); g.fill(); g.stroke();
+  } else {
+    const em = { car: '🏎️', sat: '🛰️', bike: '🏍️' }[skin];
+    g.save(); g.font = '34px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(em, x, y + 2); g.restore();
+  }
+}
+
+function draw() {
+  const cv = $('#cv'), r = cv.getBoundingClientRect();
+  if (r.width < 10 || r.height < 10) return;
+  const dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(r.width * dpr) || cv.height !== Math.round(r.height * dpr)) { cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr); }
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const W = r.width, H = r.height, p = S.p, V = S.view, k = kinP(p, S.t);
+  const { cx, cy, Rpx, pxPerM } = geom(W, H), po = posAt({ cx, cy, Rpx }, k);
+  const th0 = p.th0 * Math.PI / 180;
+
+  const bg = g.createLinearGradient(0, 0, W, H); bg.addColorStop(0, '#F4FBFF'); bg.addColorStop(1, '#FFFDF2');
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  g.strokeStyle = 'rgba(120,150,190,.16)'; g.lineWidth = 1;
+  for (let x = cx % 40; x < W; x += 40) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+  for (let y = cy % 40; y < H; y += 40) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+  g.setLineDash([6, 6]); g.strokeStyle = 'rgba(31,42,68,.35)'; g.lineWidth = 1.5;
+  g.beginPath(); g.moveTo(8, cy); g.lineTo(W - 8, cy); g.moveTo(cx, 8); g.lineTo(cx, H - 8); g.stroke(); g.setLineDash([]);
+
+  // pista
+  g.strokeStyle = 'rgba(190,208,232,.75)'; g.lineWidth = 20; g.beginPath(); g.arc(cx, cy, Rpx, 0, 7); g.stroke();
+  g.strokeStyle = '#8AA3C8'; g.lineWidth = 2; g.setLineDash([8, 7]); g.beginPath(); g.arc(cx, cy, Rpx, 0, 7); g.stroke(); g.setLineDash([]);
+  // marcas de grados
+  g.fillStyle = COL.ink; g.strokeStyle = COL.ink; g.lineWidth = 2; g.textAlign = 'center'; g.textBaseline = 'middle';
+  for (let a = 0; a < 360; a += 30) {
+    const rad = a * Math.PI / 180, c = Math.cos(rad), s = Math.sin(rad);
+    g.beginPath(); g.moveTo(cx + (Rpx + 13) * c, cy - (Rpx + 13) * s); g.lineTo(cx + (Rpx + 20) * c, cy - (Rpx + 20) * s); g.stroke();
+    if (a % 90 === 0) { g.font = 'bold 13px "Trebuchet MS",sans-serif'; g.fillText(a + '°', cx + (Rpx + 36) * c, cy - (Rpx + 36) * s); }
+  }
+  // recorrido
+  if (V.trail && Math.abs(k.dth) > 1e-6) {
+    g.strokeStyle = 'rgba(45,127,249,.45)'; g.lineWidth = 9; g.lineCap = 'round'; g.beginPath();
+    if (Math.abs(k.dth) >= TAU) g.arc(cx, cy, Rpx, 0, 7);
+    else g.arc(cx, cy, Rpx, -p.dir * th0, -p.dir * k.theta, p.dir === 1);
+    g.stroke(); g.lineCap = 'butt';
+  }
+  // huellas
+  if (V.strobo && !S.rel) {
+    const dts = V.strDt, n = Math.floor(S.t / dts + 1e-9), st = Math.max(0, n - 120);
+    for (let i = st; i <= n; i++) {
+      const kk = kinP(p, i * dts), q = posAt({ cx, cy, Rpx }, kk);
+      g.fillStyle = '#FFC93C'; g.strokeStyle = COL.ink; g.lineWidth = 2;
+      g.beginPath(); g.arc(q.x, q.y, 6, 0, 7); g.fill(); g.stroke();
+      if (n - st <= 24 && i > 0) { g.fillStyle = COL.ink; g.font = 'bold 10px "Trebuchet MS",sans-serif'; g.textAlign = 'center'; g.fillText(fmt(i * dts, dts < 1 ? 2 : 0), q.x + (q.x - cx) * 0.11, q.y + (q.y - cy) * 0.11); }
+    }
+  }
+  // ángulo θ
+  if (V.angle && !S.rel) {
+    const ra = Math.min(Rpx * 0.38, 70), tm = ((k.theta % TAU) + TAU) % TAU;
+    if (tm > 0.02) {
+      g.strokeStyle = COL.violet; g.lineWidth = 4;
+      g.beginPath(); g.arc(cx, cy, ra, 0, -p.dir * tm, p.dir === 1); g.stroke();
+      const mid = -p.dir * tm / 2;
+      tagText(g, `θ = ${fmt(k.theta)} rad`, '', cx + (ra + 12) * Math.cos(mid), cy + (ra + 12) * Math.sin(mid) + (Math.sin(mid) > 0 ? 8 : -8), COL.violet);
+    }
+  }
+  // cuerda y pivote
+  const bx = S.rel ? S.rel.x : po.x, by = S.rel ? S.rel.y : po.y;
+  if (!S.rel) {
+    g.strokeStyle = 'rgba(31,42,68,.8)'; g.lineWidth = 3; g.beginPath(); g.moveTo(cx, cy); g.lineTo(po.x, po.y); g.stroke();
+    const dx = po.x - cx, dy = po.y - cy, dl = Math.hypot(dx, dy) || 1;
+    const mx = cx + dx * 0.5 + (-dy / dl) * 20, my = cy + dy * 0.5 + (dx / dl) * 20;
+    tagText(g, `R = ${fmt(p.R, 1)} m`, '', mx - 30, my, COL.ink);
+  } else {
+    g.setLineDash([5, 6]); g.strokeStyle = '#8AA3C8'; g.lineWidth = 2; g.beginPath(); g.moveTo(S.rel.x0, S.rel.y0); g.lineTo(S.rel.x, S.rel.y); g.stroke(); g.setLineDash([]);
+  }
+  g.fillStyle = COL.ink; g.beginPath(); g.arc(cx, cy, 8, 0, 7); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(cx, cy, 3, 0, 7); g.fill();
+
+  // vectores
+  const te = tEnd(), k0 = kinP(p, 0), kr = kinP(p, Math.max(0.01, Math.min(te, 6)));
+  const vmax = Math.max(k0.v, kr.v, 1e-9), amax = Math.max(k0.a, kr.a, 1e-9);
+  const sv = 95 * V.vs / vmax, sa = 95 * V.vs / amax;
+  const len = (x, sc) => x > 1e-9 ? Math.min(240, Math.max(12, x * sc)) : 0;
+  let ux, uy, nx, ny;
+  if (S.rel) { const L = Math.hypot(S.rel.vx, S.rel.vy) || 1; ux = S.rel.vx / L; uy = S.rel.vy / L; nx = 0; ny = 0; }
+  else { ux = -p.dir * Math.sin(po.phi); uy = -p.dir * Math.cos(po.phi); nx = -Math.cos(po.phi); ny = Math.sin(po.phi); }
+  if (V.v && k.v > 1e-9) { const lv = len(k.v, sv); arrow(g, bx, by, bx + ux * lv, by + uy * lv, COL.blue, 5); tagText(g, 'v', '', bx + ux * lv + 6, by + uy * lv - 12, COL.blue); }
+  if (!S.rel) {
+    const sg = Math.sign(k.at);
+    if (V.at && Math.abs(k.at) > 1e-9) { const lt = len(Math.abs(k.at), sa), ex2 = bx + ux * sg * lt, ey2 = by + uy * sg * lt; arrow(g, bx, by, ex2, ey2, COL.mint, 4); tagText(g, 'a', 't', ex2 + 6, ey2 + 14, '#0B8A5C'); }
+    if (V.ac && k.ac > 1e-9) { const lc = len(k.ac, sa), ex3 = bx + nx * lc, ey3 = by + ny * lc; arrow(g, bx, by, ex3, ey3, COL.coral, 4); tagText(g, 'a', 'c', ex3 + 6, ey3 - 12, '#D93A40'); }
+    if (V.a && k.a > 1e-9) {
+      const ax = nx * k.ac * sa + ux * k.at * sa, ay = ny * k.ac * sa + uy * k.at * sa;
+      g.setLineDash([7, 5]); arrow(g, bx, by, bx + ax, by + ay, COL.violet, 3); g.setLineDash([]); tagText(g, 'a', '', bx + ax + 6, by + ay + 12, COL.violet);
+    }
+  }
+  drawBody(g, bx, by, V.skin);
+
+  // HUD
+  g.font = 'bold 15px "Trebuchet MS",sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+  g.fillStyle = p.mode === 'MCU' ? '#14B87A' : '#FF5A5F'; g.strokeStyle = COL.ink; g.lineWidth = 2.5; roundRect(g, 10, 10, 66, 28, 14); g.fill(); g.stroke();
+  g.fillStyle = '#fff'; g.textAlign = 'center'; g.fillText(p.mode, 43, 25);
+  g.textAlign = 'right'; g.fillStyle = COL.ink; g.font = 'bold 20px "Trebuchet MS",sans-serif'; g.fillText(`t = ${fmt(S.t)} s`, W - 14, 24);
+  g.font = 'bold 13px "Trebuchet MS",sans-serif'; g.fillText(`${p.dir === 1 ? '↺ antihorario' : '↻ horario'}`, W - 14, 46);
+}
+
+/* ===================== LECTURAS Y FÓRMULAS EN VIVO ===================== */
+const TILES = [
+  ['t', 'Tiempo t', 's', 'ink'], ['theta', 'Posición angular θ', 'rad', 'violet'], ['deg', 'θ en grados', '°', 'violet'], ['turns', 'Vueltas n', '', 'violet'],
+  ['s', 'Arco recorrido s', 'm', 'blue'], ['w', 'Rapidez angular ω', 'rad/s', 'blue'], ['v', 'Rapidez lineal v', 'm/s', 'blue'],
+  ['T', 'Periodo T', 's', 'sun'], ['f', 'Frecuencia f', 'Hz', 'sun'],
+  ['ac', 'Centrípeta a<sub>c</sub>', 'm/s²', 'coral'], ['at', 'Tangencial a<sub>t</sub>', 'm/s²', 'mint'], ['a', 'Total a', 'm/s²', 'violet']
+];
+function buildTiles() {
+  $('#tiles').innerHTML = TILES.map(([id, nm, u, c]) => `<div class="tile" style="--c:${COL[c]}"><small>${nm}</small><b id="r_${id}">0</b><i id="u_${id}">${u}</i></div>`).join('');
+}
+function updateReadouts() {
+  const k = kinP(S.p, S.t), set = (id, v) => { const e = $('#r_' + id); if (e) e.textContent = v; };
+  set('t', fmt(k.t)); set('theta', fmt(k.theta)); set('deg', fmt(k.theta * 180 / Math.PI, 1)); set('turns', fmt(k.turns));
+  set('s', fmt(k.s)); set('w', fmt(k.w)); set('v', fmt(k.v));
+  set('T', Number.isFinite(k.T) ? fmt(k.T, 3) : '∞'); set('f', fmt(k.f, 3));
+  set('ac', fmt(k.ac)); set('at', fmt(k.at)); set('a', fmt(k.a));
+  const note = S.p.mode === 'MCUV' ? ' (inst.)' : '';
+  $('#u_T').textContent = 's' + note; $('#u_f').textContent = 'Hz' + note;
+  $('#tl').value = S.t; $('#tlv').textContent = fmt(S.t) + ' s';
+}
+function liveFormulas() {
+  const p = S.p, k = kinP(p, S.t), t = S.t, f = (x, d = 2) => fmt(x, d), th0 = p.th0 * Math.PI / 180, a = k.alpha;
+  const R = (n, e, s, r) => `<div class="frow"><span class="fname">${n}</span><span class="fexp">${e}</span><span class="fsub">${s}</span><span class="fres">${r}</span></div>`;
+  let h = '';
+  if (p.mode === 'MCU') {
+    h += R('Posición angular', 'θ = θ₀ + ω·t', `${f(th0)} + ${f(p.w0)} × ${f(t)}`, `${f(k.theta)} rad`);
+    h += R('Rapidez lineal', 'v = ω·R', `${f(p.w0)} × ${f(p.R)}`, `${f(k.v)} m/s`);
+    h += R('Aceleración centrípeta', 'a<sub>c</sub> = ω²·R', `${f(p.w0)}² × ${f(p.R)}`, `${f(k.ac)} m/s²`);
+    h += R('Periodo', 'T = 2π / ω', p.w0 > 0 ? `6,283 / ${f(p.w0)}` : 'ω = 0 → T = ∞', Number.isFinite(k.T) ? `${f(k.T, 3)} s` : '∞');
+    h += R('Frecuencia', 'f = 1 / T', Number.isFinite(k.T) ? `1 / ${f(k.T, 3)}` : '—', `${f(k.f, 3)} Hz`);
+    h += R('Arco recorrido', 's = Δθ·R', `${f(k.dth)} × ${f(p.R)}`, `${f(k.s)} m`);
+  } else {
+    h += R('Rapidez angular', 'ω = ω₀ + α·t', `${f(p.w0)} + (${f(a)}) × ${f(t)}`, `${f(k.w)} rad/s`);
+    h += R('Posición angular', 'θ = θ₀ + ω₀·t + ½·α·t²', `${f(th0)} + ${f(p.w0)}×${f(t)} + ½×(${f(a)})×${f(t)}²`, `${f(k.theta)} rad`);
+    h += R('Sin usar el tiempo', 'ω² = ω₀² + 2·α·Δθ', `${f(p.w0)}² + 2×(${f(a)})×${f(k.dth)}`, `${f(k.w * k.w)} (rad/s)²`);
+    h += R('Rapidez lineal', 'v = ω·R', `${f(k.w)} × ${f(p.R)}`, `${f(k.v)} m/s`);
+    h += R('Aceleración tangencial', 'a<sub>t</sub> = α·R', `(${f(a)}) × ${f(p.R)}`, `${f(k.at)} m/s²`);
+    h += R('Aceleración centrípeta', 'a<sub>c</sub> = ω²·R', `${f(k.w)}² × ${f(p.R)}`, `${f(k.ac)} m/s²`);
+    h += R('Aceleración total', 'a = √(a<sub>c</sub>² + a<sub>t</sub>²)', `√(${f(k.ac)}² + ${f(k.at)}²)`, `${f(k.a)} m/s²`);
+  }
+  $('#liveForm').innerHTML = h;
+}
+
+/* ===================== GRÁFICAS ===================== */
+const CHARTS = [
+  { id: 'ch1', title: 'Posición angular θ (rad) vs t (s)', series: [{ n: 'θ', c: '#7C4DFF', key: 'theta', f: k => k.theta }] },
+  { id: 'ch2', title: 'Rapidez angular ω (rad/s) vs t (s)', series: [{ n: 'ω', c: '#2D7FF9', key: 'w', f: k => k.w }] },
+  { id: 'ch3', title: 'Rapidez lineal v (m/s) vs t (s)', series: [{ n: 'v', c: '#0FA88A', key: 'v', f: k => k.v }] },
+  {
+    id: 'ch4', title: 'Aceleraciones (m/s²) vs t (s)', series: [
+      { n: 'a_c', c: '#FF5A5F', key: 'ac', f: k => k.ac }, { n: 'a_t', c: '#14B87A', key: 'at', f: k => k.at }, { n: 'a', c: '#7C4DFF', key: 'a', f: k => k.a, dash: true }]
+  }
+];
+function niceStep(range, n) {
+  const raw = range / n, mag = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / mag;
+  return (m < 1.5 ? 1 : m < 3 ? 2 : m < 7 ? 5 : 10) * mag;
+}
+function drawChart(ch) {
+  const c = $('#' + ch.id), r = c.getBoundingClientRect(); if (r.width < 10) return;
+  const dpr = window.devicePixelRatio || 1;
+  if (c.width !== Math.round(r.width * dpr) || c.height !== Math.round(r.height * dpr)) { c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr); }
+  const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, r.width, r.height);
+  const W = r.width, H = r.height, L = 58, Rm = 14, T = 38, B = 34, w = W - L - Rm, h = H - T - B;
+  const te = Math.max(tEnd(), 0.001), N = 160, p = S.p, ks = [];
+  for (let i = 0; i <= N; i++) ks.push(kinP(p, te * i / N));
+  let lo = 0, hi = 0;
+  ch.series.forEach(s => ks.forEach(k => { const y = s.f(k); lo = Math.min(lo, y); hi = Math.max(hi, y); }));
+  if (hi - lo < 1e-9) hi = lo + 1;
+  const pad = (hi - lo) * 0.08; if (hi > 0) hi += pad; if (lo < 0) lo -= pad;
+  const X = t => L + t / te * w, Y = y => T + (hi - y) / (hi - lo) * h;
+  g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+  g.font = 'bold 14px "Trebuchet MS",sans-serif'; g.fillStyle = COL.ink; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(ch.title, 10, 15);
+  // leyenda
+  let lx = L; g.font = 'bold 12px "Trebuchet MS",sans-serif';
+  ch.series.forEach(s => { g.fillStyle = s.c; g.fillRect(lx, 26, 14, 4); g.fillStyle = COL.ink; g.fillText(s.n, lx + 18, 28); lx += 26 + g.measureText(s.n).width + 10; });
+  // rejilla
+  const ys = niceStep(hi - lo, 5), xs = niceStep(te, 6);
+  g.strokeStyle = '#E3ECF7'; g.lineWidth = 1; g.fillStyle = COL.muted || '#5B6B88'; g.font = '11px "Trebuchet MS",sans-serif';
+  g.textAlign = 'right'; g.textBaseline = 'middle';
+  for (let y = Math.ceil(lo / ys) * ys; y <= hi + 1e-9; y += ys) { g.beginPath(); g.moveTo(L, Y(y)); g.lineTo(L + w, Y(y)); g.stroke(); g.fillText(+y.toFixed(3), L - 6, Y(y)); }
+  g.textAlign = 'center'; g.textBaseline = 'top';
+  for (let x = 0; x <= te + 1e-9; x += xs) { g.beginPath(); g.moveTo(X(x), T); g.lineTo(X(x), T + h); g.stroke(); g.fillText(+x.toFixed(3), X(x), T + h + 5); }
+  g.strokeStyle = COL.ink; g.lineWidth = 2; g.beginPath(); g.moveTo(L, T); g.lineTo(L, T + h); g.lineTo(L + w, T + h); g.stroke();
+  if (lo < 0) { g.beginPath(); g.moveTo(L, Y(0)); g.lineTo(L + w, Y(0)); g.stroke(); }
+  g.textAlign = 'right'; g.fillStyle = COL.ink; g.fillText('t (s)', W - 6, H - 16);
+  // curvas
+  ch.series.forEach(s => {
+    g.strokeStyle = s.c; g.lineWidth = 3; g.setLineDash(s.dash ? [7, 5] : []); g.globalAlpha = 0.28; g.beginPath();
+    ks.forEach((k, i) => i ? g.lineTo(X(k.t), Y(s.f(k))) : g.moveTo(X(k.t), Y(s.f(k)))); g.stroke();
+    g.globalAlpha = 1; g.beginPath(); let first = true;
+    for (let i = 0; i <= N; i++) { const k = ks[i]; if (k.t > S.t + 1e-9) break; first ? g.moveTo(X(k.t), Y(s.f(k))) : g.lineTo(X(k.t), Y(s.f(k))); first = false; }
+    const kn = kinP(p, S.t); g.lineTo(X(S.t), Y(s.f(kn))); g.stroke(); g.setLineDash([]);
+  });
+  // datos registrados
+  const key = JSON.stringify(p);
+  S.rows.filter(rw => rw.key === key && rw.t <= te + 1e-9).forEach(rw => ch.series.forEach(s => {
+    g.fillStyle = s.c; g.strokeStyle = COL.ink; g.lineWidth = 2; g.beginPath(); g.arc(X(rw.t), Y(rw[s.key]), 5, 0, 7); g.fill(); g.stroke();
+  }));
+  // cursor del tiempo actual
+  g.setLineDash([5, 4]); g.strokeStyle = 'rgba(31,42,68,.55)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(X(S.t), T); g.lineTo(X(S.t), T + h); g.stroke(); g.setLineDash([]);
+  const kc = kinP(p, S.t);
+  ch.series.forEach(s => { g.fillStyle = s.c; g.strokeStyle = COL.ink; g.lineWidth = 2.5; g.beginPath(); g.arc(X(S.t), Y(s.f(kc)), 6, 0, 7); g.fill(); g.stroke(); });
+  // lectura al pasar el cursor
+  if (S.hoverT != null) {
+    const ht = clamp(S.hoverT, 0, te), kh = kinP(p, ht);
+    g.strokeStyle = COL.coral; g.lineWidth = 1.5; g.beginPath(); g.moveTo(X(ht), T); g.lineTo(X(ht), T + h); g.stroke();
+    const txt = [`t = ${fmt(ht)} s`].concat(ch.series.map(s => `${s.n} = ${fmt(s.f(kh))}`));
+    g.font = 'bold 12px "Trebuchet MS",sans-serif'; const bw = Math.max(...txt.map(x => g.measureText(x).width)) + 14, bh = txt.length * 16 + 8;
+    let bx = X(ht) + 10; if (bx + bw > W - 4) bx = X(ht) - bw - 10;
+    g.fillStyle = 'rgba(31,42,68,.92)'; roundRect(g, bx, T + 6, bw, bh, 8); g.fill();
+    g.fillStyle = '#fff'; g.textAlign = 'left'; g.textBaseline = 'middle'; txt.forEach((x, i) => g.fillText(x, bx + 7, T + 18 + i * 16));
+  }
+}
+function drawCharts() { CHARTS.forEach(drawChart); }
+function bindChartHover() {
+  CHARTS.forEach(ch => {
+    const c = $('#' + ch.id);
+    const move = e => {
+      const r = c.getBoundingClientRect(), pt = e.touches ? e.touches[0] : e, te = Math.max(tEnd(), 0.001);
+      const x = pt.clientX - r.left; S.hoverT = clamp((x - 58) / (r.width - 58 - 14), 0, 1) * te; S.dirty = true;
+    };
+    c.addEventListener('mousemove', move); c.addEventListener('touchmove', move, { passive: true }); c.addEventListener('touchstart', move, { passive: true });
+    c.addEventListener('mouseleave', () => { S.hoverT = null; S.dirty = true; });
+    c.addEventListener('touchend', () => { S.hoverT = null; S.dirty = true; });
+  });
+}
+
+/* ===================== TABLA DE DATOS ===================== */
+function renderTable() {
+  const rows = S.rows;
+  $('#tbody').innerHTML = rows.length ? rows.map((r, i) => {
+    const prev = i > 0 && rows[i - 1].key === r.key ? rows[i - 1] : null;
+    const wm = prev && r.t - prev.t > 1e-9 ? (r.dth - prev.dth) / (r.t - prev.t) : null;
+    return `<tr><td class="c">${i + 1}</td><td class="c"><span class="pill ${r.mode}">${r.mode}</span></td><td>${fmt(r.t)}</td><td>${fmt(r.theta, 3)}</td><td>${fmt(r.theta * 180 / Math.PI, 1)}</td><td>${fmt(r.turns, 3)}</td><td>${fmt(r.w, 3)}</td><td>${fmt(r.v, 3)}</td><td>${fmt(r.ac, 3)}</td><td>${fmt(r.at, 3)}</td><td>${fmt(r.a, 3)}</td><td>${wm == null ? '—' : fmt(wm, 3)}</td></tr>`;
+  }).join('') : '<tr><td colspan="12" class="c muted" style="padding:18px">Aún no hay datos. Pulsa «📍 Registrar dato» en el laboratorio.</td></tr>';
+  renderDiag();
+}
+function renderDiag() {
+  const d = $('#diag');
+  if (!S.rows.length) { d.innerHTML = '🔎 <b>Diagnóstico de tus datos:</b> registra al menos 3 mediciones con tiempos distintos.'; return; }
+  const key = S.rows[S.rows.length - 1].key;
+  const pts = S.rows.filter(r => r.key === key).sort((a, b) => a.t - b.t).filter((r, i, ar) => i === 0 || r.t - ar[i - 1].t > 1e-9);
+  if (pts.length < 3) { d.innerHTML = '🔎 <b>Diagnóstico de tus datos:</b> registra al menos 3 mediciones con tiempos distintos (mismo escenario).'; return; }
+  const ws = []; for (let i = 0; i < pts.length - 1; i++) ws.push({ tm: (pts[i].t + pts[i + 1].t) / 2, w: (pts[i + 1].dth - pts[i].dth) / (pts[i + 1].t - pts[i].t) });
+  const mean = ws.reduce((s, x) => s + x.w, 0) / ws.length, spread = Math.max(...ws.map(x => x.w)) - Math.min(...ws.map(x => x.w));
+  if (spread <= 0.02 * Math.max(Math.abs(mean), 1e-9) + 1e-6) d.innerHTML = `🔎 <b>Diagnóstico:</b> la rapidez angular media es prácticamente constante (≈ <b>${fmt(mean, 3)} rad/s</b>). Tus datos corresponden a un <b style="color:#0A8A5B">MCU</b>: α ≈ 0.`;
+  else { const al = (ws[ws.length - 1].w - ws[0].w) / (ws[ws.length - 1].tm - ws[0].tm); d.innerHTML = `🔎 <b>Diagnóstico:</b> la rapidez angular media <b>cambia</b> con el tiempo. Tus datos corresponden a un <b style="color:#C7343A">MCUV</b> con α ≈ <b>${fmt(al, 3)} rad/s²</b> (pendiente de ω media vs. t).`; }
+}
+function exportCsv() {
+  const head = ['n', 'movimiento', 'R(m)', 't(s)', 'theta(rad)', 'theta(grados)', 'vueltas', 'omega(rad/s)', 'v(m/s)', 'ac(m/s2)', 'at(m/s2)', 'a(m/s2)'];
+  const lines = [head.join(';')].concat(S.rows.map((r, i) => { const pr = JSON.parse(r.key); return [i + 1, r.mode, pr.R, r.t, r.theta, r.theta * 180 / Math.PI, r.turns, r.w, r.v, r.ac, r.at, r.a].map(x => typeof x === 'number' ? String(+x.toFixed(5)).replace('.', ',') : x).join(';'); }));
+  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'datos_MCU_MCUV.csv'; document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ===================== ACTIVIDADES ===================== */
+function parseNum(s) { s = String(s == null ? '' : s).trim().replace(',', '.'); return s === '' ? NaN : Number(s); }
+function okVal(g, c) { return Math.abs(g - c) <= Math.max(0.015 * Math.abs(c), 0.011); }
+function fmtAns(x) { return Number.isFinite(x) ? String(+x.toPrecision(5)) : '—'; }
+function plain(h) { return h.replace(/<[^>]+>/g, '').replace(/a_c/g, 'ac').replace(/a_t/g, 'at'); }
+function hintHtml(h) { return h.replace(/a_c/g, 'a<sub>c</sub>').replace(/a_t/g, 'a<sub>t</sub>'); }
+
+function renderActs() {
+  const box = $('#actList'); box.innerHTML = '';
+  ACT.forEach(a => {
+    const d = document.createElement('div'); d.className = 'card act'; d.style.setProperty('--c', COL[a.color]);
+    const pr = a.params;
+    d.innerHTML = `<h2><span class="tag" style="--c:${COL[a.color]}">${a.id}</span>${a.title}<span class="badge">${a.level}</span><span class="pill ${a.mode}">${a.mode}</span><span class="score badge" id="sc_${a.id}">0 / ${a.qs.length}</span></h2>
+      <div class="ctx">📖 ${a.context}</div>
+      <p style="margin:6px 0"><b>🎯 Objetivo:</b> ${a.goal}</p>
+      <p style="margin:6px 0 2px"><b>🧭 Procedimiento</b></p>
+      <ol>${a.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+      <div class="row"><button class="btn blue load">🔬 Cargar en el simulador</button><span class="muted" style="font-size:.88em">${pr.mode}: R = ${pr.R} m, ${pr.mode === 'MCU' ? 'ω' : 'ω₀'} = ${pr.w0} rad/s${pr.mode === 'MCUV' ? ', α = ' + pr.alpha + ' rad/s²' : ''}</span></div>
+      <p style="margin:10px 0 2px"><b>✏️ Resultados</b></p>
+      <div class="qs"></div>
+      <div class="row"><button class="btn mint chkall">✅ Comprobar todo</button></div>`;
+    const qs = d.querySelector('.qs');
+    a.qs.forEach(q => {
+      const rw = document.createElement('div'); rw.className = 'qrow';
+      const ans = q.fn(a.params);
+      rw.innerHTML = `<label>${q.text}</label><input type="text" inputmode="decimal" placeholder="Tu respuesta"><span class="muted"><b>${q.unit}</b></span><button class="btn tiny white">Comprobar</button>
+        <span class="teacher-only teacher-answer keyans">🔑 ${fmtAns(ans)} ${q.unit}</span><span class="res"></span>`;
+      const inp = rw.querySelector('input');
+      const check = () => {
+        const g = parseNum(inp.value), res = rw.querySelector('.res');
+        if (Number.isNaN(g)) { res.textContent = 'Escribe un número (puedes usar coma o punto).'; res.className = 'res warn'; S.ansAct[q.id] = { v: inp.value, ok: null }; }
+        else if (okVal(g, ans)) { res.textContent = '✅ ¡Correcto! Muy bien.'; res.className = 'res good'; S.ansAct[q.id] = { v: inp.value, ok: true }; }
+        else { res.innerHTML = '❌ Revisa tu cálculo. Pista: <b>' + hintHtml(q.hint) + '</b>'; res.className = 'res bad'; S.ansAct[q.id] = { v: inp.value, ok: false }; }
+        const okc = a.qs.filter(z => S.ansAct[z.id] && S.ansAct[z.id].ok).length; $('#sc_' + a.id).textContent = okc + ' / ' + a.qs.length;
+      };
+      rw.querySelector('button').addEventListener('click', check);
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') check(); });
+      inp.addEventListener('input', () => { S.ansAct[q.id] = Object.assign(S.ansAct[q.id] || {}, { v: inp.value }); });
+      rw._check = check; qs.appendChild(rw);
+    });
+    d.querySelector('.load').addEventListener('click', () => { setParams(a.params); showTab('lab'); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    d.querySelector('.chkall').addEventListener('click', () => { d.querySelectorAll('.qrow').forEach(r => { if (r.querySelector('input').value.trim() !== '') r._check(); }); });
+    box.appendChild(d);
+  });
+}
+
+/* ===================== PREGUNTAS PROBLEMATIZADORAS ===================== */
+const QS = [
+  { id: 'P1', tag: 'MCU', col: 'mint', text: 'En el MCU la flecha azul (v) siempre mide lo mismo, pero la física dice que la pelota SÍ tiene aceleración. ¿Cómo es posible? Observa la flecha roja y explica.', hint: 'La velocidad es un vector: tiene valor y dirección. ¿Cuál de las dos cambia en cada instante?', ans: 'Cambia la <b>dirección</b> de la velocidad en todo momento. Ese cambio produce la aceleración centrípeta a<sub>c</sub> = v²/R = ω²R, dirigida siempre hacia el centro. La rapidez (módulo) es constante, pero la velocidad vectorial no.' },
+  { id: 'P2', tag: 'MCU', col: 'mint', text: 'En un carrusel, Ana está a 1 m del centro y Beto a 4 m. ¿Quién tiene mayor ω? ¿Quién tiene mayor v? ¿Quién siente mayor aceleración centrípeta? Compruébalo en la actividad A2.', hint: 'Los dos dan una vuelta en el mismo tiempo. Piensa en el camino que recorre cada uno en esa vuelta.', ans: 'Tienen la misma ω y el mismo T (giran juntos). Beto tiene mayor v (v = ωR, 4 veces mayor) y mayor a<sub>c</sub> (a<sub>c</sub> = ω²R, también 4 veces mayor) porque recorre una circunferencia más grande en el mismo tiempo.' },
+  { id: 'P3', tag: 'MCU', col: 'mint', text: 'Si duplicas ω y mantienes R, ¿cuántas veces aumentan v y a<sub>c</sub>? Verifícalo con el simulador y explica por qué una crece más que la otra.', hint: 'Mira cómo aparece ω en cada fórmula: v = ω·R y a_c = ω²·R.', ans: 'v se <b>duplica</b> (depende de ω) y a<sub>c</sub> se <b>cuadruplica</b> (depende de ω²). Por eso a mayor rapidez de giro, la fuerza necesaria para mantener la trayectoria crece muy rápido.' },
+  { id: 'P4', tag: 'MCU', col: 'mint', text: 'Pulsa «✂ Soltar cuerda» en distintos momentos. ¿Qué trayectoria sigue la pelota? ¿Por qué no sigue girando? ¿Hacia dónde sale?', hint: 'Sin cuerda desaparece la fuerza que apunta al centro. ¿Qué dice la 1.ª ley de Newton?', ans: 'Sale en <b>línea recta tangente</b> a la circunferencia, en la dirección que tenía v en ese instante, con rapidez constante. Sin fuerza centrípeta no hay quien cambie la dirección de la velocidad (1.ª ley de Newton: inercia).' },
+  { id: 'P5', tag: 'MCUV', col: 'coral', text: '¿Qué diferencia hay entre la aceleración angular α, la aceleración tangencial a<sub>t</sub> y la aceleración centrípeta a<sub>c</sub>? ¿Qué cambia cada una?', hint: 'Una cambia el valor de v, otra cambia su dirección y α cambia el valor de ω.', ans: 'α (rad/s²) mide cuánto cambia ω cada segundo. a<sub>t</sub> = α·R cambia el <b>valor</b> de v (acelera o frena). a<sub>c</sub> = ω²·R cambia la <b>dirección</b> de v (curva la trayectoria). a<sub>t</sub> solo existe si α ≠ 0; a<sub>c</sub> existe siempre que ω ≠ 0.' },
+  { id: 'P6', tag: 'MCUV', col: 'coral', text: 'Activa el vector «a (total)» en la actividad A4. ¿Por qué ya no apunta al centro como en el MCU? ¿Hacia dónde apunta?', hint: 'Ahora hay dos componentes perpendiculares. ¿Qué pasa cuando las sumas?', ans: 'Porque a es la suma vectorial de a<sub>c</sub> (hacia el centro) y a<sub>t</sub> (tangente). Como son perpendiculares, la resultante queda «inclinada» hacia adelante cuando acelera y hacia atrás cuando frena; su valor es a = √(a<sub>c</sub>² + a<sub>t</sub>²).' },
+  { id: 'P7', tag: 'MCUV', col: 'coral', text: 'Observa las «Huellas»: en el MCU las marcas están igual de separadas, pero en el MCUV se separan cada vez más. ¿Por qué?', hint: 'Cada huella se marca en intervalos iguales de tiempo. ¿Qué pasa con ω entre una marca y la siguiente?', ans: 'En MCUV ω aumenta, así que en cada intervalo de tiempo igual el objeto recorre un ángulo mayor. Como θ = ω₀t + ½αt², el ángulo crece de forma cuadrática y las marcas se alejan; en MCU θ = ωt crece de forma lineal y la separación es constante.' },
+  { id: 'P8', tag: 'Gráficas', col: 'violet', text: '¿Qué forma tienen las gráficas θ–t y ω–t en el MCU y en el MCUV? ¿Qué representa la pendiente en cada caso?', hint: 'Compara una recta con una parábola. La pendiente es «cuánto cambia el eje y por cada unidad de x».', ans: 'MCU: θ–t es una <b>recta</b> cuya pendiente es ω; ω–t es una recta horizontal. MCUV: θ–t es una <b>parábola</b> (la pendiente instantánea es ω); ω–t es una recta inclinada cuya pendiente es α y cuya área bajo la curva es el ángulo recorrido.' },
+  { id: 'P9', tag: 'MCUV', col: 'coral', text: 'En la actividad A5 (frenando), ¿qué ocurre con a<sub>c</sub> y con a<sub>t</sub> mientras la rueda se acerca a detenerse? ¿Cuánto valen cuando ω = 0?', hint: 'a_t = α·R no depende de ω. a_c = ω²·R sí depende de ω.', ans: 'a<sub>t</sub> se mantiene constante (α·R = −4,5 m/s²) mientras que a<sub>c</sub> disminuye porque ω disminuye. Cuando ω = 0: a<sub>c</sub> = 0 y solo queda a<sub>t</sub>; el objeto se detiene al llegar a t = 4 s.' },
+  { id: 'P10', tag: 'MCUV', col: 'coral', text: 'En el arranque desde el reposo (A4), ¿cuánto valen a<sub>c</sub> y a<sub>t</sub> en t = 0? ¿Existe aceleración aunque el objeto aún no se mueve?', hint: 'Evalúa a_c = ω²·R con ω = 0 y a_t = α·R con α = 1,5 rad/s².', ans: 'En t = 0: a<sub>c</sub> = 0 (porque ω = 0) y a<sub>t</sub> = α·R = 1,5 × 2 = 3 m/s². Sí hay aceleración (tangencial): la velocidad empieza a cambiar aunque en ese instante sea cero.' },
+  { id: 'P11', tag: 'Aplicación', col: 'sun', text: 'Propón dos ejemplos de la vida real de MCU (aproximado) y dos de MCUV. Estima valores razonables de R, ω y, si corresponde, α, y calcula v y a<sub>c</sub>.', hint: 'Piensa en ruedas de la fortuna, ventiladores, discos, la Luna, lavadoras, ruedas de bicicleta al frenar…', ans: 'Ejemplos válidos de MCU: manecilla del reloj, rueda de la fortuna, ventilador en régimen. MCUV: ventilador que arranca o se apaga, centrifugadora acelerando, rueda de bicicleta frenando. Evaluar que los datos sean razonables y que usen v = ωR, a<sub>c</sub> = ω²R y a<sub>t</sub> = αR con unidades correctas.' }
+];
+function renderQs() {
+  const box = $('#qList'); box.innerHTML = '';
+  QS.forEach((q, i) => {
+    const d = document.createElement('div'); d.className = 'card qcard'; d.style.setProperty('--c', COL[q.col]);
+    d.innerHTML = `<h2><span class="tag" style="--c:${COL[q.col]}">${q.id}</span><span class="badge">${q.tag}</span></h2>
+      <p style="font-size:1.05em;font-weight:700;margin:.2em 0 .6em">${q.text}</p>
+      <textarea placeholder="Escribe tu explicación aquí…"></textarea>
+      <div class="row"><button class="btn tiny sun">💡 Pista</button></div>
+      <div class="hint">${hintHtml(q.hint)}</div>
+      <div class="keybox teacher-only teacher-answer">🔑 <b>Respuesta esperada:</b> ${q.ans}</div>`;
+    d.querySelector('textarea').addEventListener('input', e => { S.ansQ[q.id] = e.target.value; });
+    d.querySelector('button').addEventListener('click', () => d.querySelector('.hint').classList.toggle('show'));
+    box.appendChild(d);
+  });
+}
+
+/* ===================== INFORME ===================== */
+function esc(s) { return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+function renderReport() {
+  const p = S.p, te = tEnd(); let h = '';
+  h += `<h3>🎯 Objetivo</h3><p>Analizar experimentalmente el movimiento circular uniforme (MCU) y uniformemente variado (MCUV) mediante un simulador, relacionando las variables θ, ω, α, v, T, f, a<sub>c</sub> y a<sub>t</sub>.</p>`;
+  h += `<h3>⚙️ Escenario actual del simulador</h3><p><b>${p.mode}</b> · R = ${fmt(p.R, 2)} m · ${p.mode === 'MCU' ? 'ω' : 'ω₀'} = ${fmt(p.w0, 2)} rad/s${p.mode === 'MCUV' ? ' · α = ' + fmt(p.alpha, 2) + ' rad/s²' : ''} · θ₀ = ${fmt(p.th0, 0)}° · duración = ${fmt(te, 2)} s</p>`;
+  h += `<h3>📋 Datos registrados (${S.rows.length})</h3>`;
+  if (S.rows.length) {
+    h += `<div class="tblwrap" style="max-height:none"><table><thead><tr><th>#</th><th>Mov.</th><th>t (s)</th><th>θ (rad)</th><th>Vueltas</th><th>ω (rad/s)</th><th>v (m/s)</th><th>a<sub>c</sub></th><th>a<sub>t</sub></th><th>a</th></tr></thead><tbody>` +
+      S.rows.map((r, i) => `<tr><td class="c">${i + 1}</td><td class="c">${r.mode}</td><td>${fmt(r.t)}</td><td>${fmt(r.theta, 3)}</td><td>${fmt(r.turns, 3)}</td><td>${fmt(r.w, 3)}</td><td>${fmt(r.v, 3)}</td><td>${fmt(r.ac, 3)}</td><td>${fmt(r.at, 3)}</td><td>${fmt(r.a, 3)}</td></tr>`).join('') + `</tbody></table></div>`;
+  } else h += '<p class="muted">No se registraron datos.</p>';
+  h += `<h3>🧪 Resultados de las actividades</h3>`;
+  ACT.forEach(a => {
+    const given = a.qs.filter(q => S.ansAct[q.id] && S.ansAct[q.id].v);
+    if (!given.length) return;
+    h += `<p style="margin:.6em 0 .2em"><b>${a.id} · ${a.title}</b></p><ul style="margin:0">` +
+      a.qs.map(q => { const an = S.ansAct[q.id]; if (!an || !an.v) return ''; return `<li>${q.text}: <b>${esc(an.v)} ${q.unit}</b> ${an.ok === true ? '✅' : an.ok === false ? '❌' : ''}</li>`; }).join('') + '</ul>';
+  });
+  if (!ACT.some(a => a.qs.some(q => S.ansAct[q.id] && S.ansAct[q.id].v))) h += '<p class="muted">Aún no hay respuestas de actividades.</p>';
+  h += `<h3>💭 Respuestas a las preguntas problematizadoras</h3>`;
+  const any = QS.filter(q => S.ansQ[q.id] && S.ansQ[q.id].trim());
+  h += any.length ? any.map(q => `<p style="margin:.5em 0"><b>${q.id}.</b> ${q.text}<br><span style="border-left:5px solid ${COL[q.col]};padding-left:8px;display:block;margin-top:3px">${esc(S.ansQ[q.id]).replace(/\n/g, '<br>')}</span></p>`).join('') : '<p class="muted">Aún no hay respuestas escritas.</p>';
+  $('#reportBody').innerHTML = h;
+}
+
+/* ===================== MODO DOCENTE ===================== */
+function getHash() { try { return localStorage.getItem(KEY_STORE) || DEFAULT_HASH; } catch (e) { return DEFAULT_HASH; } }
+function openModal() { $('#modal').classList.add('show'); $('#pwd').value = ''; $('#pwdErr').textContent = ''; setTimeout(() => $('#pwd').focus(), 50); }
+function closeModal() { $('#modal').classList.remove('show'); }
+function tryUnlock() {
+  if (hashKey($('#pwd').value) === getHash()) { closeModal(); setTeacher(true); }
+  else { $('#pwdErr').textContent = '❌ Clave incorrecta'; const b = $('#modalBox'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); $('#pwd').select(); }
+}
+function setTeacher(on) {
+  S.teacher = on; document.body.classList.toggle('teacher', on);
+  $('#btnDocente').textContent = on ? '🔓 Salir de modo docente' : '🔐 Modo docente';
+  if (on) { $('#tLock').checked = S.lock; $('#tRestrict').value = S.restrict; showTab('docente'); }
+  else if (S.tab === 'docente') showTab('lab');
+  applyLock(); S.dirty = true;
+}
+function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+function genRandom() {
+  const mode = Math.random() < 0.5 ? 'MCU' : 'MCUV', R = pick([1, 1.5, 2, 2.5, 3, 4, 5]), w0 = pick([1, 2, 3, 4, 5, 6]), t = pick([2, 3, 4, 5]);
+  let alpha = 0;
+  if (mode === 'MCUV') alpha = pick([0.5, 1, 1.5, 2, -0.5, -1, -1.5].filter(a => a > 0 || w0 + a * t > 0.3));
+  const p = { mode, R, w0, alpha, th0: 0, tmax: 20, dir: 1 }, k = kinP(p, t);
+  S.rand = { p, t };
+  let h = `<div class="ctx">📖 Un objeto describe una circunferencia de <b>R = ${R} m</b> con ${mode === 'MCU' ? '<b>ω = ' + w0 + ' rad/s</b> (constante)' : '<b>ω₀ = ' + w0 + ' rad/s</b> y <b>α = ' + alpha + ' rad/s²</b>'}. Calcula las magnitudes en <b>t = ${t} s</b>.</div>`;
+  const rows = mode === 'MCU' ? [['θ (desde 0)', k.dth, 'rad'], ['Vueltas n', k.turns, ''], ['v', k.v, 'm/s'], ['a<sub>c</sub>', k.ac, 'm/s²'], ['Periodo T', k.T, 's'], ['Frecuencia f', k.f, 'Hz']]
+    : [['ω', k.w, 'rad/s'], ['θ recorrido', k.dth, 'rad'], ['Vueltas n', k.turns, ''], ['v', k.v, 'm/s'], ['a<sub>t</sub>', k.at, 'm/s²'], ['a<sub>c</sub>', k.ac, 'm/s²'], ['a total', k.a, 'm/s²']];
+  h += `<div class="tblwrap" style="max-height:none"><table class="simple"><thead><tr><th>Magnitud</th><th>Solución</th></tr></thead><tbody>` + rows.map(r => `<tr><td>${r[0]}</td><td><b>${fmtAns(r[1])}</b> ${r[2]}</td></tr>`).join('') + '</tbody></table></div>';
+  $('#randOut').innerHTML = h; $('#bRandLoad').disabled = false;
+}
+function saveNewKey() {
+  const v = $('#newKey').value.trim(), m = $('#keyMsg');
+  if (v.length < 4) { m.textContent = '⚠️ La clave debe tener al menos 4 caracteres.'; m.style.color = '#9A6B00'; return; }
+  try { localStorage.setItem(KEY_STORE, hashKey(v)); m.textContent = '✅ Clave actualizada en este navegador.'; m.style.color = '#0A8A5B'; $('#newKey').value = ''; }
+  catch (e) { m.textContent = '⚠️ No se pudo guardar (el navegador bloquea el almacenamiento). Se mantiene la clave original.'; m.style.color = '#9A6B00'; }
+}
+
+/* ===================== PESTAÑAS, PANTALLA COMPLETA, EVENTOS ===================== */
+function showTab(name) {
+  S.tab = name;
+  $$('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  $$('.panel').forEach(p => p.classList.toggle('active', p.id === 'p-' + name));
+  if (name === 'informe') renderReport();
+  if (name === 'datos') renderTable();
+  S.dirty = true;
+  requestAnimationFrame(() => { S.dirty = true; });
+}
+function toggleFS() {
+  const el = $('#app');
+  const inFS = document.fullscreenElement || document.webkitFullscreenElement || el.classList.contains('pseudoFS');
+  if (!inFS) {
+    const req = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (req) { try { const r = req.call(el); if (r && r.catch) r.catch(() => el.classList.add('pseudoFS')); } catch (e) { el.classList.add('pseudoFS'); } }
+    else el.classList.add('pseudoFS');
+  } else {
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
+    el.classList.remove('pseudoFS');
+  }
+  setTimeout(updateFSBtn, 150);
+}
+function updateFSBtn() {
+  const inFS = document.fullscreenElement || document.webkitFullscreenElement || $('#app').classList.contains('pseudoFS');
+  $('#btnFS').textContent = inFS ? '⛶ Salir de pantalla completa' : '⛶ Pantalla completa'; S.dirty = true;
+}
+
+function convSync(src) {
+  const ids = { rpm: '#cvRpm', w: '#cvW', f: '#cvF', T: '#cvT', deg: '#cvDeg' }, v = parseFloat($(ids[src]).value);
+  if (!Number.isFinite(v)) return;
+  let w; if (src === 'rpm') w = v * TAU / 60; else if (src === 'w') w = v; else if (src === 'f') w = v * TAU; else if (src === 'T') w = v > 0 ? TAU / v : NaN; else w = v * Math.PI / 180;
+  if (!Number.isFinite(w)) return;
+  const o = { rpm: w * 60 / TAU, w, f: w / TAU, T: w > 0 ? TAU / w : NaN, deg: w * 180 / Math.PI };
+  Object.keys(ids).forEach(k => { if (k !== src) $(ids[k]).value = Number.isFinite(o[k]) ? +o[k].toPrecision(6) : ''; });
+}
+
+function bindEvents() {
+  $$('.tab').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+  $$('.modebtn').forEach(b => b.addEventListener('click', () => { if (b.disabled) return; S.p.mode = b.dataset.m; if (S.p.mode === 'MCUV' && S.p.alpha === 0) S.p.alpha = 1; S.running = false; S.t = 0; S.rel = null; S.nextRec = 0; syncControls(); afterParams(); updatePlayBtn(); }));
+  $('#bPlay').addEventListener('click', togglePlay);
+  $('#bReset').addEventListener('click', resetSim);
+  $('#bStep').addEventListener('click', () => { S.running = false; if (S.rel) return; if (S.t >= tEnd() - 1e-9) { S.t = 0; S.nextRec = 0; } advance(0.1); updatePlayBtn(); S.dirty = true; });
+  $('#speed').addEventListener('change', e => S.speed = parseFloat(e.target.value));
+  $('#bRec').addEventListener('click', () => addRow(S.t));
+  $('#bRec2').addEventListener('click', () => addRow(S.t));
+  $('#bCut').addEventListener('click', cutRope);
+  $('#tl').addEventListener('input', e => { S.running = false; S.rel = null; S.t = clamp(parseFloat(e.target.value), 0, tEnd()); S.nextRec = Math.ceil(S.t / S.recDt - 1e-9) * S.recDt; updatePlayBtn(); S.dirty = true; });
+  $('#dir').addEventListener('change', e => { S.p.dir = parseInt(e.target.value, 10); paramsChanged(); });
+  const vw = { '#vV': 'v', '#vAc': 'ac', '#vAt': 'at', '#vA': 'a', '#vStr': 'strobo', '#vTrail': 'trail', '#vAng': 'angle' };
+  Object.keys(vw).forEach(id => $(id).addEventListener('change', e => { S.view[vw[id]] = e.target.checked; S.dirty = true; }));
+  $('#strDt').addEventListener('change', e => { S.view.strDt = parseFloat(e.target.value); S.dirty = true; });
+  $('#vScale').addEventListener('input', e => { S.view.vs = parseFloat(e.target.value); S.dirty = true; });
+  $('#skin').addEventListener('change', e => { S.view.skin = e.target.value; S.dirty = true; });
+  $('#autoRec').addEventListener('change', e => { S.auto = e.target.checked; S.nextRec = Math.ceil(S.t / S.recDt - 1e-9) * S.recDt; });
+  $('#recDt').addEventListener('change', e => { S.recDt = Math.max(0.1, parseFloat(e.target.value) || 1); e.target.value = S.recDt; S.nextRec = Math.ceil(S.t / S.recDt - 1e-9) * S.recDt; });
+  $('#bDelLast').addEventListener('click', () => { S.rows.pop(); renderTable(); S.dirty = true; });
+  $('#bClear').addEventListener('click', () => { if (!S.rows.length || confirm('¿Borrar todos los datos de la tabla?')) { S.rows = []; renderTable(); S.dirty = true; } });
+  $('#bCsv').addEventListener('click', exportCsv);
+  $('#btnFS').addEventListener('click', toggleFS);
+  document.addEventListener('fullscreenchange', updateFSBtn); document.addEventListener('webkitfullscreenchange', updateFSBtn);
+  $('#btnTexto').addEventListener('click', () => { const a = $('#app'); a.classList.toggle('big'); $('#btnTexto').textContent = a.classList.contains('big') ? 'Aa Texto normal' : 'Aa Texto grande'; S.dirty = true; });
+  $('#btnDocente').addEventListener('click', () => { if (S.teacher) setTeacher(false); else openModal(); });
+  $('#pwdOk').addEventListener('click', tryUnlock); $('#pwdCancel').addEventListener('click', closeModal);
+  $('#pwd').addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); if (e.key === 'Escape') closeModal(); });
+  $('#bExitTeacher').addEventListener('click', () => setTeacher(false));
+  $('#tLock').addEventListener('change', e => { S.lock = e.target.checked; applyLock(); });
+  $('#tShowAns').addEventListener('change', e => document.body.classList.toggle('hideAns', !e.target.checked));
+  $('#tRestrict').addEventListener('change', e => {
+    S.restrict = e.target.value;
+    if (S.restrict !== 'ALL' && S.p.mode !== S.restrict) { S.p.mode = S.restrict; if (S.restrict === 'MCUV' && S.p.alpha === 0) S.p.alpha = 1; resetSim(); syncControls(); afterParams(); }
+    applyLock();
+  });
+  $('#bNewKey').addEventListener('click', saveNewKey);
+  $('#bRand').addEventListener('click', genRandom);
+  $('#bRandLoad').addEventListener('click', () => { if (S.rand) { setParams(S.rand.p); showTab('lab'); } });
+  $('#bRepRefresh').addEventListener('click', renderReport);
+  $('#bPrint').addEventListener('click', () => { renderReport(); window.print(); });
+  $('#conc').addEventListener('input', () => { });
+  ['#cvRpm:rpm', '#cvW:w', '#cvF:f', '#cvT:T', '#cvDeg:deg'].forEach(x => { const [id, k] = x.split(':'); $(id).addEventListener('input', () => convSync(k)); });
+  document.addEventListener('keydown', e => {
+    if (/INPUT|TEXTAREA|SELECT/.test((e.target.tagName || '')) || S.tab !== 'lab' || $('#modal').classList.contains('show')) return;
+    if (e.code === 'Space') { e.preventDefault(); togglePlay(); } else if (e.key === 'r' || e.key === 'R') resetSim(); else if (e.key === 'g' || e.key === 'G') addRow(S.t);
+  });
+  window.addEventListener('resize', () => S.dirty = true);
+  if (window.ResizeObserver) { const ro = new ResizeObserver(() => S.dirty = true); ro.observe($('.cvwrap')); ro.observe($('#charts')); }
+  $('#stDate').value = new Date().toLocaleDateString('es-EC');
+}
+
+function frame(now) {
+  if (S.running) { const dt = Math.min(0.1, Math.max(0, now - S.last) / 1000) * S.speed; S.last = now; advance(dt); S.dirty = true; }
+  if (S.dirty) {
+    S.dirty = false;
+    if ($('#p-lab').classList.contains('active')) {
+      draw(); updateReadouts(); liveFormulas(); drawCharts();
+      const m = statusMsg(); $('#cvmsg').innerHTML = m ? `<span>${m}</span>` : '';
+    }
+    updatePlayBtn();
+  }
+  requestAnimationFrame(frame);
+}
+
+function init() {
+  buildControls(); buildTiles(); renderActs(); renderQs(); bindEvents(); bindChartHover(); renderTable(); afterParams(); updatePlayBtn();
+  requestAnimationFrame(t => { S.last = t; frame(t); });
+}
+init();
+</script>
+</body>
+</html>
